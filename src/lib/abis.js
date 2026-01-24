@@ -106,4 +106,25 @@ export const megapotAbi = [
       { name: "active", type: "bool" },
     ],
   },
+  {
+    type: "function",
+    name: "claimWinnings",
+    stateMutability: "nonpayable",
+    inputs: [],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "lpPoolTotal",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "userPoolTotal",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+  },
 ];

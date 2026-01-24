@@ -1,3 +1,4 @@
+import Image from "next/image";
 import styles from "@/app/page.module.css";
 
 export default function Header({
@@ -16,6 +17,13 @@ export default function Header({
   return (
     <header className={styles.header}>
       <div className={styles.brand}>
+        <Image
+          src="/luckysave_black.png"
+          alt="LuckySave logo"
+          width={32}
+          height={32}
+          className={styles.logoImage}
+        />
         <div className={styles.logoMark}>LuckySave</div>
       </div>
       <div className={styles.headerActions}>

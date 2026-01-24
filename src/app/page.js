@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { formatUnits, parseUnits } from "viem";
+import { useEffect, useState } from "react";
+import { formatUnits } from "viem";
 import {
   useAccount,
   useConnect,
@@ -16,15 +16,16 @@ import styles from "./page.module.css";
 import useAppStore from "@/store/useAppStore";
 import Header from "@/components/Header";
 import WalletModal from "@/components/WalletModal";
-import BalancesCard from "@/components/BalancesCard";
-import DepositCard from "@/components/DepositCard";
-import MegapotCard from "@/components/MegapotCard";
+import EarnInterestCard from "@/components/EarnInterestCard";
+import PlayLotteryCard from "@/components/PlayLotteryCard";
+import DepositModal from "@/components/DepositModal";
+import WithdrawModal from "@/components/WithdrawModal";
+import BuyTicketsModal from "@/components/BuyTicketsModal";
 import {
   AAVE_POOL_ADDRESS,
   AAVE_USDC_ATOKEN,
   BASE_CHAIN_ID,
   MEGAPOT_ADDRESS,
-  MEGAPOT_REFERRER,
   USDC_ADDRESS,
   USDC_DECIMALS,
 } from "@/lib/constants";
@@ -44,11 +45,12 @@ export default function Home() {
   const setEntered = useAppStore((state) => state.setEntered);
   const setLastResult = useAppStore((state) => state.setLastResult);
 
-  const [depositAmount, setDepositAmount] = useState("");
-  const [entryAmount, setEntryAmount] = useState("");
-  const [depositStatus, setDepositStatus] = useState("");
-  const [megapotStatus, setMegapotStatus] = useState("");
+  // Modal states
   const [walletOpen, setWalletOpen] = useState(false);
+  const [depositModalOpen, setDepositModalOpen] = useState(false);
+  const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
+  const [ticketModalOpen, setTicketModalOpen] = useState(false);
+
   const countdown = useNextDrawCountdown();
 
   const connector = connectors[0];
@@ -66,68 +68,31 @@ export default function Home() {
       ? `Chain ${chainId}`
       : "Unknown network";
 
-  const normalizeAmountInput = (value) => {
-    const cleaned = value.replace(/[^\d.]/g, "");
-    if (!cleaned) return "";
-    const dotIndex = cleaned.indexOf(".");
-    if (dotIndex === -1) {
-      return cleaned.replace(/^0+(?=\d)/, "0");
-    }
-    const whole = cleaned.slice(0, dotIndex).replace(/^0+(?=\d)/, "0");
-    const fraction = cleaned.slice(dotIndex + 1).replace(/\./g, "");
-    return `${whole || "0"}.${fraction.slice(0, USDC_DECIMALS)}`;
-  };
-
-  const safeParseUnits = (value) => {
-    const sanitized = value?.endsWith(".") ? value.slice(0, -1) : value;
-    try {
-      return parseUnits(sanitized || "0", USDC_DECIMALS);
-    } catch (error) {
-      return 0n;
-    }
-  };
-
-  const parsedDeposit = useMemo(
-    () => safeParseUnits(depositAmount),
-    [depositAmount]
-  );
-  const parsedEntry = useMemo(() => safeParseUnits(entryAmount), [entryAmount]);
-
-  const { data: usdcBalance } = useReadContract({
+  // Contract reads
+  const { data: usdcBalance, refetch: refetchUsdcBalance } = useReadContract({
     address: USDC_ADDRESS,
     abi: erc20Abi,
     functionName: "balanceOf",
     args: address ? [address] : undefined,
     query: { enabled: Boolean(address) },
   });
-  const { data: aTokenBalance } = useReadContract({
+
+  const { data: aTokenBalance, refetch: refetchATokenBalance } = useReadContract({
     address: AAVE_USDC_ATOKEN,
     abi: erc20Abi,
     functionName: "balanceOf",
     args: address ? [address] : undefined,
     query: { enabled: Boolean(address && AAVE_USDC_ATOKEN) },
   });
-  const { data: usdcAllowance } = useReadContract({
-    address: USDC_ADDRESS,
-    abi: erc20Abi,
-    functionName: "allowance",
-    args: address ? [address, AAVE_POOL_ADDRESS] : undefined,
-    query: { enabled: Boolean(address) },
-  });
-  const { data: megapotAllowance } = useReadContract({
-    address: USDC_ADDRESS,
-    abi: erc20Abi,
-    functionName: "allowance",
-    args: address ? [address, MEGAPOT_ADDRESS] : undefined,
-    query: { enabled: Boolean(address) },
-  });
-  const { data: usersInfo } = useReadContract({
+
+  const { data: usersInfo, refetch: refetchUsersInfo } = useReadContract({
     address: MEGAPOT_ADDRESS,
     abi: megapotAbi,
     functionName: "usersInfo",
     args: address ? [address] : undefined,
     query: { enabled: Boolean(address && isOnBase) },
   });
+
   const { data: reserveData } = useReadContract({
     address: AAVE_POOL_ADDRESS,
     abi: aavePoolAbi,
@@ -136,13 +101,28 @@ export default function Home() {
     query: { enabled: true },
   });
 
+  // Megapot jackpot pool reads
+  const { data: lpPoolTotal } = useReadContract({
+    address: MEGAPOT_ADDRESS,
+    abi: megapotAbi,
+    functionName: "lpPoolTotal",
+    query: { enabled: true },
+  });
+
+  const { data: userPoolTotal } = useReadContract({
+    address: MEGAPOT_ADDRESS,
+    abi: megapotAbi,
+    functionName: "userPoolTotal",
+    query: { enabled: true },
+  });
+
   // Sync entered state and winnings from on-chain usersInfo
   useEffect(() => {
     if (!usersInfo) return;
 
-    const [, winningsClaimable, active] = usersInfo;
+    const [ticketsPurchasedTotalBps, winningsClaimable, active] = usersInfo;
 
-    // Sync "entered" pill with on-chain active status for current round
+    // Sync "entered" with on-chain active status
     setEntered(active);
 
     // Format winnings for display
@@ -150,116 +130,75 @@ export default function Home() {
       const formatted = currency.format(
         Number(formatUnits(winningsClaimable, USDC_DECIMALS))
       );
-      setLastResult(`${formatted} to claim!`);
+      setLastResult(formatted);
     } else {
-      setLastResult("No wins to claim");
+      setLastResult(null);
     }
   }, [usersInfo, setEntered, setLastResult]);
 
+  // Formatted values
   const usdcBalanceNum = Number(formatUnits(usdcBalance || 0n, USDC_DECIMALS));
   const aTokenBalanceNum = Number(formatUnits(aTokenBalance || 0n, USDC_DECIMALS));
-  const totalValueNum = usdcBalanceNum + aTokenBalanceNum;
 
   const usdcBalanceLabel = address ? currency.format(usdcBalanceNum) : "--";
   const depositedLabel = address ? currency.format(aTokenBalanceNum) : "--";
-  const totalValueLabel = address ? currency.format(totalValueNum) : "--";
 
-  // Extract current liquidity rate (APY) from reserve data
+  // APY from reserve data
   const currentLiquidityRate = reserveData?.currentLiquidityRate;
   const supplyApyLabel = formatApy(currentLiquidityRate);
 
-  const hasUsdcBalance = typeof usdcBalance === "bigint";
-  const hasATokenBalance = typeof aTokenBalance === "bigint";
-  const hasParsedDeposit = parsedDeposit > 0n;
-  const hasParsedEntry = parsedEntry > 0n;
-  const canDeposit =
-    isReadyForActions &&
-    hasParsedDeposit &&
-    (!hasUsdcBalance || usdcBalance >= parsedDeposit);
-  const canWithdraw =
-    isReadyForActions &&
-    hasParsedDeposit &&
-    (!hasATokenBalance || aTokenBalance >= parsedDeposit);
-  const canEnterMegapot =
-    isReadyForActions &&
-    hasParsedEntry &&
-    (!hasUsdcBalance || usdcBalance >= parsedEntry);
+  // Check if user has deposit
+  const hasDeposit = aTokenBalanceNum > 0;
 
-  const formatTxError = (error) => {
-    if (!error) return "Unknown error.";
-    if (typeof error === "string") return error;
-    if (error.shortMessage) return error.shortMessage;
-    if (error.message) return error.message;
-    return "Transaction failed.";
-  };
+  // Winnings
+  const winningsClaimable = usersInfo?.[1] || 0n;
+  const hasWinnings = winningsClaimable > 0n;
+  const winningsLabel = hasWinnings
+    ? currency.format(Number(formatUnits(winningsClaimable, USDC_DECIMALS)))
+    : null;
 
-  const handleApproveAndDeposit = async () => {
-    if (!address || !hasParsedDeposit) return;
-    setDepositStatus("Approving & depositing...");
+  // Ticket count (convert from bps - assuming 1 ticket = 100 bps = $1)
+  const ticketsPurchasedBps = usersInfo?.[0] || 0n;
+  const ticketCount = Number(ticketsPurchasedBps) / 100;
+
+  // Jackpot = max(lpPoolTotal, userPoolTotal)
+  const lpPool = lpPoolTotal || 0n;
+  const userPool = userPoolTotal || 0n;
+  const jackpotAmount = lpPool > userPool ? lpPool : userPool;
+  const jackpotNum = Number(formatUnits(jackpotAmount, USDC_DECIMALS));
+  const jackpotLabel = currency.format(jackpotNum);
+
+  // Handlers
+  const handleClaimWinnings = async () => {
+    if (!address || !hasWinnings) return;
     try {
-      const amount = parsedDeposit;
-      if (!usdcAllowance || usdcAllowance < amount) {
-        await writeContractAsync({
-          address: USDC_ADDRESS,
-          abi: erc20Abi,
-          functionName: "approve",
-          args: [AAVE_POOL_ADDRESS, amount],
-        });
-      }
-      await writeContractAsync({
-        address: AAVE_POOL_ADDRESS,
-        abi: aavePoolAbi,
-        functionName: "supply",
-        args: [USDC_ADDRESS, amount, address, 0],
-      });
-      setDepositStatus("Deposit submitted.");
-    } catch (error) {
-      setDepositStatus(formatTxError(error));
-    }
-  };
-
-  const handleWithdraw = async () => {
-    if (!address || !hasParsedDeposit) return;
-    setDepositStatus("Withdrawing USDC from Aave...");
-    try {
-      await writeContractAsync({
-        address: AAVE_POOL_ADDRESS,
-        abi: aavePoolAbi,
-        functionName: "withdraw",
-        args: [USDC_ADDRESS, parsedDeposit, address],
-      });
-      setDepositStatus("Withdraw submitted.");
-    } catch (error) {
-      setDepositStatus(formatTxError(error));
-    }
-  };
-
-  const handleEnterMegapot = async () => {
-    if (!address || !hasParsedEntry) return;
-    setMegapotStatus("Entering Megapot...");
-    try {
-      if (!megapotAllowance || megapotAllowance < parsedEntry) {
-        await writeContractAsync({
-          address: USDC_ADDRESS,
-          abi: erc20Abi,
-          functionName: "approve",
-          args: [MEGAPOT_ADDRESS, parsedEntry],
-        });
-      }
       await writeContractAsync({
         address: MEGAPOT_ADDRESS,
         abi: megapotAbi,
-        functionName: "purchaseTickets",
-        args: [MEGAPOT_REFERRER, parsedEntry, address],
+        functionName: "claimWinnings",
+        args: [],
       });
-      setMegapotStatus("Entry submitted.");
-      setEntered(true);
-      // Last result continues showing previous round's result (won/lost)
-      // The approval we just did (if any) will be detected on next render
+      refetchUsersInfo();
+      refetchUsdcBalance();
     } catch (error) {
-      setMegapotStatus(formatTxError(error));
-      // Don't change entered state on failure - the error message is shown in status
+      console.error("Claim failed:", error);
     }
+  };
+
+  const handleDepositSuccess = () => {
+    refetchUsdcBalance();
+    refetchATokenBalance();
+  };
+
+  const handleWithdrawSuccess = () => {
+    refetchUsdcBalance();
+    refetchATokenBalance();
+  };
+
+  const handleTicketSuccess = () => {
+    refetchUsdcBalance();
+    refetchUsersInfo();
+    setEntered(true);
   };
 
   return (
@@ -278,38 +217,24 @@ export default function Home() {
         />
 
         <section className={styles.grid}>
-          <BalancesCard
-            usdcBalanceLabel={usdcBalanceLabel}
-            depositedLabel={depositedLabel}
-            totalValueLabel={totalValueLabel}
-            supplyApyLabel={supplyApyLabel}
+          <EarnInterestCard
+            apyLabel={supplyApyLabel}
+            depositBalance={depositedLabel}
+            hasDeposit={hasDeposit}
+            onDepositClick={() => setDepositModalOpen(true)}
+            onWithdrawClick={() => setWithdrawModalOpen(true)}
+            isConnected={isReadyForActions && isOnBase}
           />
-          <DepositCard
-            depositAmount={depositAmount}
-            onDepositAmountChange={(value) =>
-              setDepositAmount(normalizeAmountInput(value))
-            }
-            onApproveAndDeposit={handleApproveAndDeposit}
-            onSwitchChain={() => switchChainAsync?.({ chainId: BASE_CHAIN_ID })}
-            onWithdraw={handleWithdraw}
-            status={depositStatus}
-            canDeposit={canDeposit}
-            canWithdraw={canWithdraw}
-            isOnBase={isOnBase}
-            isSwitching={isSwitching}
-            isWriting={isWriting}
-          />
-          <MegapotCard
-            entryAmount={entryAmount}
-            onEntryAmountChange={(value) =>
-              setEntryAmount(normalizeAmountInput(value))
-            }
-            countdown={countdown}
+          <PlayLotteryCard
+            jackpotLabel={jackpotLabel}
             entered={entered}
-            lastResult={lastResult}
-            onEnter={handleEnterMegapot}
-            status={megapotStatus}
-            canEnter={canEnterMegapot}
+            ticketCount={ticketCount}
+            countdown={countdown}
+            winningsLabel={winningsLabel}
+            hasWinnings={hasWinnings}
+            onBuyTicketsClick={() => setTicketModalOpen(true)}
+            onClaimClick={handleClaimWinnings}
+            isConnected={isReadyForActions && isOnBase}
             isWriting={isWriting}
           />
         </section>
@@ -322,6 +247,7 @@ export default function Home() {
         </footer>
       </div>
 
+      {/* Wallet Modal */}
       {walletOpen && (
         <WalletModal
           isConnected={isConnected}
@@ -343,6 +269,34 @@ export default function Home() {
           aavePoolAddress={AAVE_POOL_ADDRESS}
         />
       )}
+
+      {/* Deposit Modal */}
+      <DepositModal
+        isOpen={depositModalOpen}
+        onClose={() => setDepositModalOpen(false)}
+        usdcBalance={usdcBalance}
+        usdcBalanceLabel={usdcBalanceLabel}
+        apyLabel={supplyApyLabel}
+        onSuccess={handleDepositSuccess}
+      />
+
+      {/* Withdraw Modal */}
+      <WithdrawModal
+        isOpen={withdrawModalOpen}
+        onClose={() => setWithdrawModalOpen(false)}
+        depositBalance={aTokenBalance}
+        depositBalanceLabel={depositedLabel}
+        onSuccess={handleWithdrawSuccess}
+      />
+
+      {/* Buy Tickets Modal */}
+      <BuyTicketsModal
+        isOpen={ticketModalOpen}
+        onClose={() => setTicketModalOpen(false)}
+        usdcBalance={usdcBalance}
+        usdcBalanceLabel={usdcBalanceLabel}
+        onSuccess={handleTicketSuccess}
+      />
     </div>
   );
 }
