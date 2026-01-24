@@ -1,0 +1,269 @@
+0 verbose cli /usr/local/bin/node /usr/local/bin/npm
+1 info using npm@10.5.0
+2 info using node@v20.10.0
+3 timing npm:load:whichnode Completed in 0ms
+4 timing config:load:defaults Completed in 1ms
+5 timing config:load:file:/usr/local/lib/node_modules/npm/npmrc Completed in 0ms
+6 timing config:load:builtin Completed in 0ms
+7 timing config:load:cli Completed in 1ms
+8 timing config:load:env Completed in 0ms
+9 timing config:load:file:/Users/tom/Repos/luckysave/.npmrc Completed in 0ms
+10 timing config:load:project Completed in 1ms
+11 timing config:load:file:/Users/tom/.npmrc Completed in 0ms
+12 timing config:load:user Completed in 0ms
+13 timing config:load:file:/usr/local/etc/npmrc Completed in 0ms
+14 timing config:load:global Completed in 0ms
+15 timing config:load:setEnvs Completed in 0ms
+16 timing config:load Completed in 3ms
+17 timing npm:load:configload Completed in 3ms
+18 timing config:load:flatten Completed in 1ms
+19 timing npm:load:mkdirpcache Completed in 0ms
+20 timing npm:load:mkdirplogs Completed in 0ms
+21 verbose title npm install wagmi viem ethers zustand @tanstack/react-query @aave/address-book
+22 verbose argv "install" "--cache" "/Users/tom/Repos/luckysave/.npm-cache" "wagmi" "viem" "ethers" "zustand" "@tanstack/react-query" "@aave/address-book"
+23 timing npm:load:setTitle Completed in 0ms
+24 timing npm:load:display Completed in 1ms
+25 verbose logfile logs-max:10 dir:/Users/tom/Repos/luckysave/.npm-cache/_logs/2026-01-22T17_24_40_220Z-
+26 verbose logfile /Users/tom/Repos/luckysave/.npm-cache/_logs/2026-01-22T17_24_40_220Z-debug-0.log
+27 timing npm:load:logFile Completed in 3ms
+28 timing npm:load:timers Completed in 0ms
+29 timing npm:load:configScope Completed in 0ms
+30 timing npm:load Completed in 13ms
+31 timing arborist:ctor Completed in 1ms
+32 silly logfile done cleaning log files
+33 timing idealTree:init Completed in 57ms
+34 timing idealTree:userRequests Completed in 1ms
+35 silly idealTree buildDeps
+36 silly fetch manifest wagmi@*
+37 timing arborist:ctor Completed in 0ms
+38 http fetch GET 200 https://registry.npmjs.org/wagmi 737ms (cache miss)
+39 silly fetch manifest @tanstack/react-query@*
+40 http fetch GET 200 https://registry.npmjs.org/@tanstack%2freact-query 196ms (cache miss)
+41 silly fetch manifest react@19.2.3
+42 http fetch GET 200 https://registry.npmjs.org/react 272ms (cache miss)
+43 silly fetch manifest typescript@>=5.7.3
+44 http fetch GET 200 https://registry.npmjs.org/typescript 1019ms (cache miss)
+45 silly fetch manifest viem@*
+46 http fetch GET 200 https://registry.npmjs.org/viem 842ms (cache miss)
+47 silly fetch manifest ethers@*
+48 http fetch GET 200 https://registry.npmjs.org/ethers 113ms (cache miss)
+49 silly fetch manifest zustand@*
+50 http fetch GET 200 https://registry.npmjs.org/zustand 100ms (cache miss)
+51 silly fetch manifest @types/react@>=18.0.0
+52 http fetch GET 200 https://registry.npmjs.org/@types%2freact 341ms (cache miss)
+53 silly fetch manifest immer@>=9.0.6
+54 http fetch GET 200 https://registry.npmjs.org/immer 202ms (cache miss)
+55 silly fetch manifest use-sync-external-store@>=1.2.0
+56 http fetch GET 200 https://registry.npmjs.org/use-sync-external-store 264ms (cache miss)
+57 silly fetch manifest @aave/address-book@*
+58 notice Access token expired or revoked. Please try logging in again.
+59 http fetch GET 404 https://registry.npmjs.org/@aave%2faddress-book 239ms (cache skip)
+60 silly placeDep ROOT @aave/address-book@ OK for: luckysave@0.1.0 want: *
+61 silly placeDep ROOT @tanstack/react-query@5.90.19 OK for: luckysave@0.1.0 want: *
+62 silly placeDep ROOT ethers@6.16.0 OK for: luckysave@0.1.0 want: *
+63 silly placeDep ROOT viem@2.44.4 OK for: luckysave@0.1.0 want: *
+64 silly placeDep ROOT wagmi@3.4.1 OK for: luckysave@0.1.0 want: *
+65 silly placeDep ROOT zustand@5.0.10 OK for: luckysave@0.1.0 want: *
+66 silly fetch manifest @tanstack/query-core@5.90.19
+67 silly fetch manifest ws@8.17.1
+68 silly fetch manifest tslib@2.7.0
+69 silly fetch manifest aes-js@4.0.0-beta.5
+70 silly fetch manifest @types/node@22.7.5
+71 silly fetch manifest @noble/curves@1.2.0
+72 silly fetch manifest @noble/hashes@1.3.2
+73 http fetch GET 200 https://registry.npmjs.org/aes-js 162ms (cache miss)
+74 silly fetch manifest @adraffy/ens-normalize@1.10.1
+75 http fetch GET 200 https://registry.npmjs.org/tslib 172ms (cache miss)
+76 silly fetch manifest @noble/curves@1.9.1
+77 http fetch GET 200 https://registry.npmjs.org/ws 180ms (cache miss)
+78 silly fetch manifest @noble/hashes@1.8.0
+79 http fetch GET 200 https://registry.npmjs.org/@noble%2fhashes 185ms (cache miss)
+80 silly fetch manifest @scure/bip32@1.7.0
+81 http fetch GET 200 https://registry.npmjs.org/@noble%2fcurves 219ms (cache miss)
+82 silly fetch manifest @scure/bip39@1.6.0
+83 http fetch GET 200 https://registry.npmjs.org/@scure%2fbip32 67ms (cache miss)
+84 silly fetch manifest abitype@1.2.3
+85 http fetch GET 200 https://registry.npmjs.org/@adraffy%2fens-normalize 92ms (cache miss)
+86 silly fetch manifest isows@1.0.7
+87 http fetch GET 200 https://registry.npmjs.org/@noble%2fhashes 87ms (cache miss)
+88 silly fetch manifest ox@0.11.3
+89 http fetch GET 200 https://registry.npmjs.org/@tanstack%2fquery-core 297ms (cache miss)
+90 silly fetch manifest ws@8.18.3
+91 silly fetch manifest use-sync-external-store@1.4.0
+92 silly fetch manifest @wagmi/connectors@7.1.5
+93 http fetch GET 200 https://registry.npmjs.org/@noble%2fcurves 128ms (cache miss)
+94 silly fetch manifest @wagmi/core@3.3.1
+95 http fetch GET 200 https://registry.npmjs.org/@scure%2fbip39 93ms (cache miss)
+96 http fetch GET 200 https://registry.npmjs.org/abitype 66ms (cache miss)
+97 http fetch GET 200 https://registry.npmjs.org/isows 79ms (cache miss)
+98 http fetch GET 200 https://registry.npmjs.org/ox 99ms (cache miss)
+99 http fetch GET 200 https://registry.npmjs.org/@wagmi%2fcore 143ms (cache miss)
+100 http fetch GET 200 https://registry.npmjs.org/@types%2fnode 495ms (cache miss)
+101 http fetch GET 200 https://registry.npmjs.org/@wagmi%2fconnectors 639ms (cache miss)
+102 timing idealTree:#root Completed in 5526ms
+103 timing idealTree:node_modules/@aave/address-book Completed in 0ms
+104 silly placeDep ROOT @tanstack/query-core@5.90.19 OK for: @tanstack/react-query@5.90.19 want: 5.90.19
+105 timing idealTree:node_modules/@tanstack/react-query Completed in 2ms
+106 timing idealTree:node_modules/@tanstack/query-core Completed in 0ms
+107 silly fetch manifest bufferutil@^4.0.1
+108 http fetch GET 200 https://registry.npmjs.org/bufferutil 76ms (cache miss)
+109 silly fetch manifest utf-8-validate@>=5.0.2
+110 http fetch GET 200 https://registry.npmjs.org/utf-8-validate 60ms (cache miss)
+111 silly placeDep ROOT @adraffy/ens-normalize@1.10.1 OK for: ethers@6.16.0 want: 1.10.1
+112 silly placeDep ROOT @noble/curves@1.2.0 OK for: ethers@6.16.0 want: 1.2.0
+113 silly placeDep ROOT @noble/hashes@1.3.2 OK for: ethers@6.16.0 want: 1.3.2
+114 silly placeDep ROOT @types/node@22.7.5 OK for: ethers@6.16.0 want: 22.7.5
+115 silly placeDep ROOT aes-js@4.0.0-beta.5 OK for: ethers@6.16.0 want: 4.0.0-beta.5
+116 silly placeDep node_modules/ethers tslib@2.7.0 OK for: ethers@6.16.0 want: 2.7.0
+117 silly placeDep ROOT ws@8.17.1 OK for: ethers@6.16.0 want: 8.17.1
+118 silly fetch manifest undici-types@~6.19.2
+119 http fetch GET 200 https://registry.npmjs.org/undici-types 57ms (cache miss)
+120 timing idealTree:node_modules/ethers Completed in 205ms
+121 timing idealTree:node_modules/@adraffy/ens-normalize Completed in 0ms
+122 timing idealTree:node_modules/@noble/curves Completed in 0ms
+123 timing idealTree:node_modules/@noble/hashes Completed in 0ms
+124 silly placeDep ROOT undici-types@6.19.8 OK for: @types/node@22.7.5 want: ~6.19.2
+125 timing idealTree:node_modules/@types/node Completed in 1ms
+126 timing idealTree:node_modules/aes-js Completed in 0ms
+127 timing idealTree:node_modules/undici-types Completed in 0ms
+128 silly fetch manifest typescript@>=5.0.4
+129 silly fetch manifest zod@^3.22.0 || ^4.0.0
+130 http fetch GET 200 https://registry.npmjs.org/zod 106ms (cache miss)
+131 silly placeDep node_modules/viem @noble/curves@1.9.1 OK for: viem@2.44.4 want: 1.9.1
+132 silly placeDep node_modules/viem @noble/hashes@1.8.0 OK for: viem@2.44.4 want: 1.8.0
+133 silly placeDep ROOT @scure/bip32@1.7.0 OK for: viem@2.44.4 want: 1.7.0
+134 silly placeDep ROOT @scure/bip39@1.6.0 OK for: viem@2.44.4 want: 1.6.0
+135 silly placeDep ROOT abitype@1.2.3 OK for: viem@2.44.4 want: 1.2.3
+136 silly placeDep ROOT isows@1.0.7 OK for: viem@2.44.4 want: 1.0.7
+137 silly placeDep ROOT ox@0.11.3 OK for: viem@2.44.4 want: 0.11.3
+138 silly placeDep node_modules/viem ws@8.18.3 OK for: viem@2.44.4 want: 8.18.3
+139 silly fetch manifest @scure/base@~1.2.5
+140 silly fetch manifest @noble/curves@~1.9.0
+141 silly fetch manifest @noble/hashes@~1.8.0
+142 silly fetch manifest @adraffy/ens-normalize@^1.11.0
+143 silly fetch manifest @noble/ciphers@^1.3.0
+144 silly fetch manifest @noble/hashes@^1.8.0
+145 silly fetch manifest eventemitter3@5.0.1
+146 http fetch GET 200 https://registry.npmjs.org/eventemitter3 71ms (cache miss)
+147 http fetch GET 200 https://registry.npmjs.org/@scure%2fbase 85ms (cache miss)
+148 http fetch GET 200 https://registry.npmjs.org/@noble%2fciphers 86ms (cache miss)
+149 timing idealTree:node_modules/viem Completed in 222ms
+150 silly placeDep node_modules/@scure/bip32 @noble/curves@1.9.7 OK for: @scure/bip32@1.7.0 want: ~1.9.0
+151 silly placeDep node_modules/@scure/bip32 @noble/hashes@1.8.0 OK for: @scure/bip32@1.7.0 want: ~1.8.0
+152 silly placeDep ROOT @scure/base@1.2.6 OK for: @scure/bip32@1.7.0 want: ~1.2.5
+153 timing idealTree:node_modules/@scure/bip32 Completed in 2ms
+154 timing idealTree:node_modules/@scure/base Completed in 0ms
+155 silly placeDep node_modules/@scure/bip39 @noble/hashes@1.8.0 OK for: @scure/bip39@1.6.0 want: ~1.8.0
+156 timing idealTree:node_modules/@scure/bip39 Completed in 1ms
+157 timing idealTree:node_modules/abitype Completed in 0ms
+158 timing idealTree:node_modules/isows Completed in 0ms
+159 silly placeDep node_modules/ox @adraffy/ens-normalize@1.11.1 OK for: ox@0.11.3 want: ^1.11.0
+160 silly placeDep ROOT @noble/ciphers@1.3.0 OK for: ox@0.11.3 want: ^1.3.0
+161 silly placeDep node_modules/ox @noble/curves@1.9.1 OK for: ox@0.11.3 want: 1.9.1
+162 silly placeDep node_modules/ox @noble/hashes@1.8.0 OK for: ox@0.11.3 want: ^1.8.0
+163 silly placeDep ROOT eventemitter3@5.0.1 OK for: ox@0.11.3 want: 5.0.1
+164 timing idealTree:node_modules/ox Completed in 3ms
+165 timing idealTree:node_modules/@noble/ciphers Completed in 0ms
+166 timing idealTree:node_modules/eventemitter3 Completed in 0ms
+167 silly fetch manifest react@>=18
+168 silly fetch manifest @base-org/account@^2.5.1
+169 http fetch GET 200 https://registry.npmjs.org/@base-org%2faccount 82ms (cache miss)
+170 silly fetch manifest @coinbase/wallet-sdk@^4.3.6
+171 http fetch GET 200 https://registry.npmjs.org/@coinbase%2fwallet-sdk 141ms (cache miss)
+172 silly fetch manifest @gemini-wallet/core@~0.3.1
+173 http fetch GET 200 https://registry.npmjs.org/@gemini-wallet%2fcore 75ms (cache miss)
+174 silly fetch manifest viem@2.x
+175 silly fetch manifest @metamask/sdk@~0.33.1
+176 http fetch GET 200 https://registry.npmjs.org/@metamask%2fsdk 142ms (cache miss)
+177 silly fetch manifest @safe-global/safe-apps-provider@~0.18.6
+178 http fetch GET 200 https://registry.npmjs.org/@safe-global%2fsafe-apps-provider 71ms (cache miss)
+179 silly fetch manifest @safe-global/safe-apps-sdk@^9.1.0
+180 http fetch GET 200 https://registry.npmjs.org/@safe-global%2fsafe-apps-sdk 92ms (cache miss)
+181 silly fetch manifest @tanstack/query-core@>=5.0.0
+182 silly fetch manifest ox@>=0.11.1
+183 silly fetch manifest @walletconnect/ethereum-provider@^2.21.1
+184 http fetch GET 200 https://registry.npmjs.org/@walletconnect%2fethereum-provider 208ms (cache miss)
+185 silly fetch manifest porto@~0.2.35
+186 http fetch GET 200 https://registry.npmjs.org/porto 83ms (cache miss)
+187 silly fetch manifest @tanstack/react-query@>=5.0.0
+188 silly fetch manifest expo-auth-session@>=7.0.8
+189 http fetch GET 200 https://registry.npmjs.org/expo-auth-session 72ms (cache miss)
+190 silly fetch manifest react-native@*
+191 http fetch GET 200 https://registry.npmjs.org/react-native 228ms (cache miss)
+192 silly fetch manifest @types/react@^19.1.1
+193 silly fetch manifest expo-crypto@>=15.0.7
+194 http fetch GET 200 https://registry.npmjs.org/expo-crypto 94ms (cache miss)
+195 silly fetch manifest expo@*
+196 http fetch GET 200 https://registry.npmjs.org/expo 155ms (cache miss)
+197 silly fetch manifest @expo/dom-webview@*
+198 http fetch GET 200 https://registry.npmjs.org/@expo%2fdom-webview 84ms (cache miss)
+199 silly fetch manifest @expo/metro-runtime@*
+200 http fetch GET 200 https://registry.npmjs.org/@expo%2fmetro-runtime 105ms (cache miss)
+201 silly fetch manifest react-dom@*
+202 http fetch GET 200 https://registry.npmjs.org/react-dom 342ms (cache miss)
+203 silly fetch manifest react-native-webview@*
+204 http fetch GET 200 https://registry.npmjs.org/react-native-webview 336ms (cache miss)
+205 silly fetch manifest expo-web-browser@>=15.0.8
+206 http fetch GET 200 https://registry.npmjs.org/expo-web-browser 79ms (cache miss)
+207 silly fetch manifest wagmi@>=2.0.0
+208 silly placeDep ROOT @wagmi/connectors@7.1.5 OK for: wagmi@3.4.1 want: 7.1.5
+209 silly placeDep ROOT @wagmi/core@3.3.1 OK for: @wagmi/connectors@7.1.5 want: 3.3.1
+210 silly placeDep ROOT use-sync-external-store@1.4.0 OK for: wagmi@3.4.1 want: 1.4.0
+211 silly fetch manifest mipd@0.0.7
+212 silly fetch manifest zustand@5.0.0
+213 http fetch GET 200 https://registry.npmjs.org/mipd 62ms (cache miss)
+214 timing idealTree:node_modules/wagmi Completed in 2673ms
+215 timing idealTree:node_modules/@wagmi/connectors Completed in 0ms
+216 silly fetch manifest react@>=18.0.0
+217 silly placeDep ROOT mipd@0.0.7 OK for: @wagmi/core@3.3.1 want: 0.0.7
+218 silly placeDep node_modules/@wagmi/core zustand@5.0.0 OK for: @wagmi/core@3.3.1 want: 5.0.0
+219 timing idealTree:node_modules/@wagmi/core Completed in 3ms
+220 timing idealTree:node_modules/mipd Completed in 0ms
+221 timing idealTree:node_modules/use-sync-external-store Completed in 0ms
+222 timing idealTree:node_modules/ws Completed in 0ms
+223 timing idealTree:node_modules/zustand Completed in 0ms
+224 timing idealTree:node_modules/@scure/bip32/node_modules/@noble/curves Completed in 0ms
+225 timing idealTree:node_modules/@scure/bip32/node_modules/@noble/hashes Completed in 0ms
+226 timing idealTree:node_modules/@scure/bip39/node_modules/@noble/hashes Completed in 0ms
+227 timing idealTree:node_modules/@wagmi/core/node_modules/zustand Completed in 0ms
+228 timing idealTree:node_modules/ethers/node_modules/tslib Completed in 0ms
+229 timing idealTree:node_modules/ox/node_modules/@adraffy/ens-normalize Completed in 0ms
+230 timing idealTree:node_modules/ox/node_modules/@noble/curves Completed in 0ms
+231 timing idealTree:node_modules/ox/node_modules/@noble/hashes Completed in 0ms
+232 timing idealTree:node_modules/viem/node_modules/@noble/curves Completed in 0ms
+233 timing idealTree:node_modules/viem/node_modules/@noble/hashes Completed in 0ms
+234 timing idealTree:node_modules/viem/node_modules/ws Completed in 0ms
+235 timing idealTree:buildDeps Completed in 8640ms
+236 timing idealTree:fixDepFlags Completed in 2ms
+237 timing idealTree Completed in 8701ms
+238 timing command:install Completed in 8704ms
+239 verbose stack HttpErrorGeneral: 404 Not Found - GET https://registry.npmjs.org/@aave%2faddress-book - Not found
+239 verbose stack     at /usr/local/lib/node_modules/npm/node_modules/npm-registry-fetch/lib/check-response.js:95:15
+239 verbose stack     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+239 verbose stack     at async RegistryFetcher.packument (/usr/local/lib/node_modules/npm/node_modules/pacote/lib/registry.js:91:19)
+239 verbose stack     at async RegistryFetcher.manifest (/usr/local/lib/node_modules/npm/node_modules/pacote/lib/registry.js:129:23)
+239 verbose stack     at async #nodeFromEdge (/usr/local/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/build-ideal-tree.js:1056:19)
+239 verbose stack     at async #buildDepStep (/usr/local/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/build-ideal-tree.js:924:11)
+239 verbose stack     at async Arborist.buildIdealTree (/usr/local/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/build-ideal-tree.js:203:7)
+239 verbose stack     at async Promise.all (index 1)
+239 verbose stack     at async Arborist.reify (/usr/local/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/reify.js:154:5)
+239 verbose stack     at async Install.exec (/usr/local/lib/node_modules/npm/lib/commands/install.js:153:5)
+240 verbose statusCode 404
+241 verbose pkgid @aave/address-book@*
+242 verbose cwd /Users/tom/Repos/luckysave
+243 verbose Darwin 23.6.0
+244 verbose node v20.10.0
+245 verbose npm  v10.5.0
+246 error code E404
+247 error 404 Not Found - GET https://registry.npmjs.org/@aave%2faddress-book - Not found
+248 error 404
+249 error 404  '@aave/address-book@*' is not in this registry.
+250 error 404
+250 error 404 Note that you can also install from a
+251 error 404 tarball, folder, http url, or git url.
+252 verbose exit 1
+253 timing npm Completed in 8773ms
+254 verbose unfinished npm timer reify 1769102680288
+255 verbose unfinished npm timer reify:loadTrees 1769102680290
+256 verbose code 1
+257 error A complete log of this run can be found in: /Users/tom/Repos/luckysave/.npm-cache/_logs/2026-01-22T17_24_40_220Z-debug-0.log
