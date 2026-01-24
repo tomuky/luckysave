@@ -11,6 +11,7 @@
   "dependencies": {
     "@bgd-labs/aave-address-book": "^4.41.5",
     "@tanstack/react-query": "^5.90.19",
+    "@vercel/analytics": "^1.6.1",
     "ethers": "^6.16.0",
     "next": "16.1.4",
     "react": "19.2.3",
