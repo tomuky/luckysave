@@ -16,6 +16,18 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "LuckySave",
   description: "Save in USDC and enter Megapot with yield.",
+  icons: {
+    icon: [
+      {
+        url: "/luckysave_black.png",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: "/luckysave.png",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({ children }) {
