@@ -64,7 +64,7 @@
 }
 
 .logoMark {
-  font-size: 24px;
+  font-size: 36px;
   font-weight: 700;
   letter-spacing: 1px;
 }
@@ -724,8 +724,21 @@
 
 /* Mobile adjustments */
 @media (max-width: 720px) {
+  .page{
+    padding: 20px 20px 80px 20px;
+  }
+  .shell{
+    gap: 20px;
+  }
+  .logoMark {
+    font-size: 24px;
+  }
+  .logoImage {
+    width: 24px;
+    height: 24px;
+  }
   .brand {
-    gap: 12px;
+    gap: 8px;
   }
 
   .nav {
