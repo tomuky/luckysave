@@ -12,6 +12,12 @@ export default function EarnInterestCard({
     <div className={styles.card}>
       <div className={styles.cardHeader}>
         <h2>Earn Interest</h2>
+        <span className={styles.poweredBy}>
+          Powered by{" "}
+          <a href="https://aave.com/docs" target="_blank" rel="noopener noreferrer">
+            Aave
+          </a>
+        </span>
       </div>
 
       <div className={styles.statsRow}>

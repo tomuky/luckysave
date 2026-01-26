@@ -18,10 +18,11 @@ export default function PlayLotteryCard({
     <div className={styles.card}>
       <div className={styles.cardHeader}>
         <h2>Play Lottery</h2>
-        <span className={`${styles.pill} ${entered ? "" : styles.warning}`}>
-          {entered
-            ? `${ticketCount} ticket${ticketCount !== 1 ? "s" : ""} entered`
-            : "Not entered"}
+        <span className={styles.poweredBy}>
+          Powered by{" "}
+          <a href="https://docs.megapot.io/" target="_blank" rel="noopener noreferrer">
+            Megapot.io
+          </a>
         </span>
       </div>
 
@@ -38,13 +39,20 @@ export default function PlayLotteryCard({
         Buy Tickets
       </button>
 
-      <div className={styles.countdownSection}>
-        <div className={styles.countdownLabel}>
-          <ClockIcon size={14} className={styles.countdownIcon} />
-          <span className={styles.muted}>Next Drawing</span>
+      <div className={styles.countdownRow}>
+        <div className={styles.countdownSection}>
+          <div className={styles.countdownLabel}>
+            <ClockIcon size={14} className={styles.countdownIcon} />
+            <span className={styles.muted}>Next Drawing</span>
+          </div>
+          <span className={styles.countdown}>
+            <AnimatedNumber value={countdown} duration={300} />
+          </span>
         </div>
-        <span className={styles.countdown}>
-          <AnimatedNumber value={countdown} duration={300} />
+        <span className={`${styles.pill} ${entered ? "" : styles.warning}`}>
+          {entered
+            ? `${ticketCount} ticket${ticketCount !== 1 ? "s" : ""} entered`
+            : "Not entered"}
         </span>
       </div>
 
