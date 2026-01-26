@@ -5,8 +5,9 @@ export default function StepIndicator({ steps, currentStepIndex }) {
   return (
     <div className={styles.stepIndicator}>
       {steps.map((step, index) => {
-        const isComplete = index < currentStepIndex;
-        const isCurrent = index === currentStepIndex;
+        const isLastStep = index === steps.length - 1;
+        const isComplete = index < currentStepIndex || (isLastStep && currentStepIndex === index);
+        const isCurrent = index === currentStepIndex && !isLastStep;
 
         return (
           <div key={step.id} className={styles.stepItem}>
