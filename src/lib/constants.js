@@ -11,3 +11,8 @@ export const MEGAPOT_ADDRESS = "0xbEDd4F2beBE9E3E636161E644759f3cbe3d51B95";
 export const AAVE_POOL_ADDRESS = AaveV3Base.POOL;
 export const AAVE_USDC_ATOKEN =
   AaveV3Base?.ASSETS?.USDC?.A_TOKEN ?? "";
+
+// Etherscan API (unified endpoint for all chains including Base)
+export const ETHERSCAN_API_KEY = process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY || "";
+export const ETHERSCAN_API_URL = "https://api.etherscan.io/v2/api";
+export const BASESCAN_TX_URL = "https://basescan.org/tx";

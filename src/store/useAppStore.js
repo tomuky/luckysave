@@ -11,6 +11,9 @@ const useAppStore = create((set) => ({
   setEntered: (entered) => set({ entered }),
   lastResult: null,
   setLastResult: (lastResult) => set({ lastResult }),
+  // Global refetch trigger - increment to signal data should be refreshed
+  refetchTrigger: 0,
+  triggerRefetch: () => set((state) => ({ refetchTrigger: state.refetchTrigger + 1 })),
 }));
 
 export default useAppStore;

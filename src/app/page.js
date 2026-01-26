@@ -22,6 +22,7 @@ import NeedWalletCard from "@/components/NeedWalletCard";
 import DepositModal from "@/components/DepositModal";
 import WithdrawModal from "@/components/WithdrawModal";
 import BuyTicketsModal from "@/components/BuyTicketsModal";
+import WalletHistoryCard from "@/components/WalletHistoryCard";
 import {
   AAVE_POOL_ADDRESS,
   AAVE_USDC_ATOKEN,
@@ -45,6 +46,7 @@ export default function Home() {
   const lastResult = useAppStore((state) => state.lastResult);
   const setEntered = useAppStore((state) => state.setEntered);
   const setLastResult = useAppStore((state) => state.setLastResult);
+  const triggerRefetch = useAppStore((state) => state.triggerRefetch);
 
   // Modal states
   const [walletOpen, setWalletOpen] = useState(false);
@@ -181,6 +183,7 @@ export default function Home() {
       });
       refetchUsersInfo();
       refetchUsdcBalance();
+      triggerRefetch();
     } catch (error) {
       console.error("Claim failed:", error);
     }
@@ -189,17 +192,20 @@ export default function Home() {
   const handleDepositSuccess = () => {
     refetchUsdcBalance();
     refetchATokenBalance();
+    triggerRefetch();
   };
 
   const handleWithdrawSuccess = () => {
     refetchUsdcBalance();
     refetchATokenBalance();
+    triggerRefetch();
   };
 
   const handleTicketSuccess = () => {
     refetchUsdcBalance();
     refetchUsersInfo();
     setEntered(true);
+    triggerRefetch();
   };
 
   return (
@@ -238,6 +244,10 @@ export default function Home() {
             onClaimClick={handleClaimWinnings}
             isConnected={isReadyForActions && isOnBase}
             isWriting={isWriting}
+          />
+          <WalletHistoryCard
+            address={address}
+            isConnected={isReadyForActions && isOnBase}
           />
         </section>
       </div>
