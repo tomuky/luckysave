@@ -13,7 +13,11 @@ import useAppStore from "@/store/useAppStore";
 
 const PAGE_SIZE = 5;
 // Delay before refetching to give Etherscan time to index the transaction
-const REFETCH_DELAY_MS = 3000;
+const INITIAL_REFETCH_DELAY_MS = 4000;
+// How many times to retry refetching for new transactions
+const REFETCH_MAX_ATTEMPTS = 4;
+// Delay between retry attempts (increases each time)
+const REFETCH_RETRY_INTERVAL_MS = 3000;
 
 // Retry configuration for rate limiting
 const MAX_RETRIES = 3;
@@ -50,7 +54,7 @@ export default function useWalletHistory(address) {
   const [error, setError] = useState(null);
   const [timestampMode, setTimestampMode] = useState("relative");
   const refetchTrigger = useAppStore((state) => state.refetchTrigger);
-  const refetchTimeoutRef = useRef(null);
+  const refetchTimeoutRef = useRef([]);
 
   const toggleTimestampMode = useCallback(() => {
     setTimestampMode((prev) => (prev === "relative" ? "absolute" : "relative"));
@@ -213,24 +217,29 @@ export default function useWalletHistory(address) {
   }, [fetchHistory]);
 
   // Refetch when global trigger changes (after transactions complete)
-  // Use a delay to give Etherscan time to index the transaction
+  // Use a delay to give Etherscan time to index the transaction, with retries
   useEffect(() => {
     if (refetchTrigger === 0) return; // Skip initial mount
 
-    // Clear any existing timeout
-    if (refetchTimeoutRef.current) {
-      clearTimeout(refetchTimeoutRef.current);
-    }
+    // Clear any existing timeouts
+    refetchTimeoutRef.current.forEach(clearTimeout);
+    refetchTimeoutRef.current = [];
 
-    // Schedule a delayed refetch (bypass cache since we expect new data)
-    refetchTimeoutRef.current = setTimeout(() => {
-      fetchHistory(true);
-    }, REFETCH_DELAY_MS);
+    // Schedule multiple refetch attempts with increasing delays
+    // This ensures we catch newly indexed transactions even if Etherscan is slow
+    const timeouts = [];
+    for (let i = 0; i < REFETCH_MAX_ATTEMPTS; i++) {
+      const delay = INITIAL_REFETCH_DELAY_MS + (i * REFETCH_RETRY_INTERVAL_MS);
+      const timeoutId = setTimeout(() => {
+        fetchHistory(true);
+      }, delay);
+      timeouts.push(timeoutId);
+    }
+    refetchTimeoutRef.current = timeouts;
 
     return () => {
-      if (refetchTimeoutRef.current) {
-        clearTimeout(refetchTimeoutRef.current);
-      }
+      refetchTimeoutRef.current.forEach(clearTimeout);
+      refetchTimeoutRef.current = [];
     };
   }, [refetchTrigger, fetchHistory]);
 
