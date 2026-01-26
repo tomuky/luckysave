@@ -2,11 +2,23 @@ import styles from "@/app/page.module.css";
 import { ClockIcon, SparkleIcon } from "./Icons";
 import AnimatedNumber from "./AnimatedNumber";
 
+const formatDrawTime = (timestamp) => {
+  if (!timestamp) return "";
+  const date = new Date(timestamp);
+  const timeStr = date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short",
+  });
+  return timeStr;
+};
+
 export default function PlayLotteryCard({
   jackpotLabel,
   entered,
   ticketCount,
   countdown,
+  nextDrawAt,
   winningsLabel,
   hasWinnings,
   onBuyTicketsClick,
@@ -43,7 +55,7 @@ export default function PlayLotteryCard({
         <div className={styles.countdownSection}>
           <div className={styles.countdownLabel}>
             <ClockIcon size={14} className={styles.countdownIcon} />
-            <span className={styles.muted}>Next Drawing</span>
+            <span className={styles.muted}>Next Drawing: {formatDrawTime(nextDrawAt)}</span>
           </div>
           <span className={styles.countdown}>
             <AnimatedNumber value={countdown} duration={300} />

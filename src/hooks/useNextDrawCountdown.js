@@ -84,10 +84,12 @@ const useNextDrawCountdown = () => {
     return () => clearInterval(timer);
   }, [nextDrawAt]);
 
-  return useMemo(
+  const countdown = useMemo(
     () => formatCountdown(nextDrawAt - now),
     [nextDrawAt, now]
   );
+
+  return { countdown, nextDrawAt };
 };
 
 export default useNextDrawCountdown;

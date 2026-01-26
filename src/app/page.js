@@ -54,7 +54,7 @@ export default function Home() {
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [ticketModalOpen, setTicketModalOpen] = useState(false);
 
-  const countdown = useNextDrawCountdown();
+  const { countdown, nextDrawAt } = useNextDrawCountdown();
 
   const connector = connectors[0];
   const isReadyForActions = Boolean(isConnected && address);
@@ -238,6 +238,7 @@ export default function Home() {
             entered={entered}
             ticketCount={ticketCount}
             countdown={countdown}
+            nextDrawAt={nextDrawAt}
             winningsLabel={winningsLabel}
             hasWinnings={hasWinnings}
             onBuyTicketsClick={() => setTicketModalOpen(true)}
