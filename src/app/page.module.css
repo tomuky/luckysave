@@ -691,6 +691,29 @@
   font-weight: 600;
 }
 
+/* Need Wallet Card */
+.needWalletCard {
+  padding: 20px 28px;
+  gap: 0;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .needWalletCard {
+    grid-column: 1 / -1;
+  }
+}
+
+.needWalletText {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.needWalletLink {
+  color: var(--text);
+  font-weight: 600;
+}
+
 /* Legacy styles for compatibility */
 .row {
   display: flex;

@@ -18,6 +18,7 @@ import Header from "@/components/Header";
 import WalletModal from "@/components/WalletModal";
 import EarnInterestCard from "@/components/EarnInterestCard";
 import PlayLotteryCard from "@/components/PlayLotteryCard";
+import NeedWalletCard from "@/components/NeedWalletCard";
 import DepositModal from "@/components/DepositModal";
 import WithdrawModal from "@/components/WithdrawModal";
 import BuyTicketsModal from "@/components/BuyTicketsModal";
@@ -217,6 +218,7 @@ export default function Home() {
         />
 
         <section className={styles.grid}>
+          {!isConnected && <NeedWalletCard />}
           <EarnInterestCard
             apyLabel={supplyApyLabel}
             depositBalance={depositedLabel}
@@ -238,13 +240,6 @@ export default function Home() {
             isWriting={isWriting}
           />
         </section>
-
-        <footer className={styles.footer}>
-          Need a wallet?{" "}
-          <a href="https://fastdefi.xyz" target="_blank" rel="noreferrer">
-            FastDeFi.xyz
-          </a>
-        </footer>
       </div>
 
       {/* Wallet Modal */}
