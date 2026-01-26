@@ -12,7 +12,8 @@ export const AAVE_POOL_ADDRESS = AaveV3Base.POOL;
 export const AAVE_USDC_ATOKEN =
   AaveV3Base?.ASSETS?.USDC?.A_TOKEN ?? "";
 
-// Etherscan API (unified endpoint for all chains including Base)
-export const ETHERSCAN_API_KEY = process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY || "";
-export const ETHERSCAN_API_URL = "https://api.etherscan.io/v2/api";
+// Basescan URL for transaction links (client-side only)
 export const BASESCAN_TX_URL = "https://basescan.org/tx";
+
+// Note: ETHERSCAN_API_KEY is now server-side only (no NEXT_PUBLIC_ prefix)
+// It's used in src/app/api/wallet-history/route.js

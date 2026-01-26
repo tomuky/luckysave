@@ -3,9 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { decodeFunctionData } from "viem";
 import {
-  ETHERSCAN_API_KEY,
-  ETHERSCAN_API_URL,
-  BASE_CHAIN_ID,
   MEGAPOT_ADDRESS,
   AAVE_POOL_ADDRESS,
   USDC_ADDRESS,
@@ -60,7 +57,7 @@ export default function useWalletHistory(address) {
   }, []);
 
   const fetchHistory = useCallback(async (bypassCache = false) => {
-    if (!address || !ETHERSCAN_API_KEY) return;
+    if (!address) return;
 
     setIsLoading(true);
     setError(null);
@@ -76,20 +73,9 @@ export default function useWalletHistory(address) {
       }
     }
 
-    // Fetch with retry logic
+    // Fetch with retry logic (calls our API route which proxies to Etherscan)
     const fetchWithRetry = async (retryCount = 0) => {
-      const params = new URLSearchParams({
-        chainid: String(BASE_CHAIN_ID),
-        module: "account",
-        action: "txlist",
-        address: address,
-        startblock: "0",
-        endblock: "99999999",
-        sort: "desc",
-        apikey: ETHERSCAN_API_KEY,
-      });
-
-      const response = await fetch(`${ETHERSCAN_API_URL}?${params}`);
+      const response = await fetch(`/api/wallet-history?address=${address}`);
       const data = await response.json();
 
       // Check for rate limiting or other API errors
