@@ -315,6 +315,7 @@
   font-weight: 600;
   text-align: center;
   transition: opacity 0.15s ease;
+  flex: 1;
 }
 
 .buttonPrimary:hover:not(:disabled) {
@@ -329,6 +330,7 @@
   text-align: center;
   background: #e1e1e1;
   transition: background 0.15s ease;
+  flex: 1;
 }
 
 .buttonSecondary:hover:not(:disabled) {
