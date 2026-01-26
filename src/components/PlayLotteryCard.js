@@ -1,5 +1,6 @@
 import styles from "@/app/page.module.css";
 import { ClockIcon, SparkleIcon } from "./Icons";
+import AnimatedNumber from "./AnimatedNumber";
 
 export default function PlayLotteryCard({
   jackpotLabel,
@@ -42,7 +43,9 @@ export default function PlayLotteryCard({
           <ClockIcon size={14} className={styles.countdownIcon} />
           <span className={styles.muted}>Next Drawing</span>
         </div>
-        <span className={styles.countdown}>{countdown}</span>
+        <span className={styles.countdown}>
+          <AnimatedNumber value={countdown} duration={300} />
+        </span>
       </div>
 
       {hasWinnings ? (

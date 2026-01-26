@@ -1,0 +1,86 @@
+.animatedNumber {
+  display: inline-flex;
+  align-items: center;
+  /* Use tabular figures for consistent digit widths */
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.static {
+  display: inline-block;
+}
+
+.digits {
+  display: inline-flex;
+  align-items: center;
+}
+
+.digit {
+  display: inline-block;
+  text-align: center;
+  /* Ensure consistent width for single digits */
+  min-width: 0.6em;
+}
+
+.digitWrapper {
+  display: inline-block;
+  height: 1em;
+  line-height: 1;
+  overflow: hidden;
+  vertical-align: bottom;
+  /* Ensure consistent width for animated digits */
+  min-width: 0.6em;
+  text-align: center;
+}
+
+.digitInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.digitPrev,
+.digitCurrent {
+  display: block;
+  height: 1em;
+  line-height: 1;
+  min-width: 0.6em;
+  text-align: center;
+}
+
+/* Slide up animation (when value increases) - soft bubbly spring */
+.slideUp {
+  animation: slideUp var(--animation-duration, 500ms) cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes slideUp {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-1em);
+  }
+}
+
+/* Slide down animation (when value decreases) - soft bubbly spring */
+.slideDown .digitPrev {
+  order: 2;
+}
+
+.slideDown .digitCurrent {
+  order: 1;
+}
+
+.slideDown {
+  transform: translateY(-1em);
+  animation: slideDown var(--animation-duration, 500ms) cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes slideDown {
+  0% {
+    transform: translateY(-1em);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}

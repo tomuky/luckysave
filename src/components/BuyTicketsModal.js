@@ -6,6 +6,7 @@ import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import styles from "@/app/page.module.css";
 import StepIndicator from "./StepIndicator";
 import { CheckIcon, CloseIcon, PlusIcon, MinusIcon } from "./Icons";
+import AnimatedNumber from "./AnimatedNumber";
 import {
   MEGAPOT_ADDRESS,
   MEGAPOT_REFERRER,
@@ -145,7 +146,9 @@ export default function BuyTicketsModal({
               >
                 <MinusIcon size={16} />
               </button>
-              <span className={styles.ticketCount}>{ticketCount}</span>
+              <span className={styles.ticketCount}>
+                <AnimatedNumber value={ticketCount} duration={300} />
+              </span>
               <button
                 type="button"
                 className={styles.ticketButton}
@@ -157,15 +160,19 @@ export default function BuyTicketsModal({
             </div>
             <div className={styles.ticketPriceDisplay}>
               <span className={styles.muted}>${TICKET_PRICE} per ticket</span>
-              <span className={styles.ticketTotal}>= ${totalPrice} USDC</span>
+              <span className={styles.ticketTotal}>
+                = $<AnimatedNumber value={totalPrice} duration={300} /> USDC
+              </span>
             </div>
             <div className={styles.balanceHint}>
               <span className={styles.muted}>Available: {usdcBalanceLabel}</span>
             </div>
-            {oddsLabel && (
+            {oddsRatio && (
               <div className={styles.oddsDisplay}>
                 <span className={styles.muted}>Your odds:</span>
-                <span className={styles.oddsValue}>{oddsLabel}</span>
+                <span className={styles.oddsValue}>
+                  1 in <AnimatedNumber value={oddsRatio.toLocaleString()} duration={300} />
+                </span>
               </div>
             )}
             {error && <div className={styles.errorText}>{error}</div>}
