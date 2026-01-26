@@ -54,7 +54,7 @@ export default function Home() {
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [ticketModalOpen, setTicketModalOpen] = useState(false);
 
-  const { countdown, nextDrawAt } = useNextDrawCountdown();
+  const { countdown, nextDrawAt, isLoading: isLoadingCountdown } = useNextDrawCountdown();
 
   const connector = connectors[0];
   const isReadyForActions = Boolean(isConnected && address);
@@ -71,8 +71,13 @@ export default function Home() {
       ? `Chain ${chainId}`
       : "Unknown network";
 
-  // Contract reads
-  const { data: usdcBalance, refetch: refetchUsdcBalance } = useReadContract({
+  // Contract reads - track loading states for skeleton UI
+  const {
+    data: usdcBalance,
+    refetch: refetchUsdcBalance,
+    isLoading: isLoadingUsdcBalance,
+    isFetched: isFetchedUsdcBalance,
+  } = useReadContract({
     address: USDC_ADDRESS,
     abi: erc20Abi,
     functionName: "balanceOf",
@@ -80,7 +85,12 @@ export default function Home() {
     query: { enabled: Boolean(address) },
   });
 
-  const { data: aTokenBalance, refetch: refetchATokenBalance } = useReadContract({
+  const {
+    data: aTokenBalance,
+    refetch: refetchATokenBalance,
+    isLoading: isLoadingATokenBalance,
+    isFetched: isFetchedATokenBalance,
+  } = useReadContract({
     address: AAVE_USDC_ATOKEN,
     abi: erc20Abi,
     functionName: "balanceOf",
@@ -88,7 +98,12 @@ export default function Home() {
     query: { enabled: Boolean(address && AAVE_USDC_ATOKEN) },
   });
 
-  const { data: usersInfo, refetch: refetchUsersInfo } = useReadContract({
+  const {
+    data: usersInfo,
+    refetch: refetchUsersInfo,
+    isLoading: isLoadingUsersInfo,
+    isFetched: isFetchedUsersInfo,
+  } = useReadContract({
     address: MEGAPOT_ADDRESS,
     abi: megapotAbi,
     functionName: "usersInfo",
@@ -96,7 +111,11 @@ export default function Home() {
     query: { enabled: Boolean(address && isOnBase) },
   });
 
-  const { data: reserveData } = useReadContract({
+  const {
+    data: reserveData,
+    isLoading: isLoadingReserveData,
+    isFetched: isFetchedReserveData,
+  } = useReadContract({
     address: AAVE_POOL_ADDRESS,
     abi: aavePoolAbi,
     functionName: "getReserveData",
@@ -105,19 +124,34 @@ export default function Home() {
   });
 
   // Megapot jackpot pool reads
-  const { data: lpPoolTotal } = useReadContract({
+  const {
+    data: lpPoolTotal,
+    isLoading: isLoadingLpPool,
+    isFetched: isFetchedLpPool,
+  } = useReadContract({
     address: MEGAPOT_ADDRESS,
     abi: megapotAbi,
     functionName: "lpPoolTotal",
     query: { enabled: true },
   });
 
-  const { data: userPoolTotal } = useReadContract({
+  const {
+    data: userPoolTotal,
+    isLoading: isLoadingUserPool,
+    isFetched: isFetchedUserPool,
+  } = useReadContract({
     address: MEGAPOT_ADDRESS,
     abi: megapotAbi,
     functionName: "userPoolTotal",
     query: { enabled: true },
   });
+
+  // Derived loading states for UI components
+  const isLoadingJackpot = !isFetchedLpPool || !isFetchedUserPool;
+  const isLoadingUserData = address && (!isFetchedUsersInfo || !isFetchedUsdcBalance);
+  const isLoadingDeposit = address && !isFetchedATokenBalance;
+  const isLoadingApy = !isFetchedReserveData;
+  const isLoadingWalletBalance = address && !isFetchedUsdcBalance;
 
   // Sync entered state and winnings from on-chain usersInfo
   useEffect(() => {
@@ -221,6 +255,7 @@ export default function Home() {
           isSwitching={isSwitching}
           onSwitchChain={() => switchChainAsync?.({ chainId: BASE_CHAIN_ID })}
           onWalletClick={() => setWalletOpen(true)}
+          isLoadingBalance={isLoadingWalletBalance}
         />
 
         <section className={styles.grid}>
@@ -232,6 +267,8 @@ export default function Home() {
             onDepositClick={() => setDepositModalOpen(true)}
             onWithdrawClick={() => setWithdrawModalOpen(true)}
             isConnected={isReadyForActions && isOnBase}
+            isLoadingDeposit={isLoadingDeposit}
+            isLoadingApy={isLoadingApy}
           />
           <PlayLotteryCard
             jackpotLabel={jackpotLabel}
@@ -245,6 +282,9 @@ export default function Home() {
             onClaimClick={handleClaimWinnings}
             isConnected={isReadyForActions && isOnBase}
             isWriting={isWriting}
+            isLoadingJackpot={isLoadingJackpot}
+            isLoadingUserData={isLoadingUserData}
+            isLoadingCountdown={isLoadingCountdown}
           />
           <WalletHistoryCard
             address={address}

@@ -9,18 +9,28 @@ const useNextDrawCountdown = () => {
   const [now, setNow] = useState(Date.now());
 
   // Read last jackpot end time from contract
-  const { data: lastJackpotEndTime, refetch: refetchLastJackpotEndTime } = useReadContract({
+  const {
+    data: lastJackpotEndTime,
+    refetch: refetchLastJackpotEndTime,
+    isFetched: isFetchedLastJackpot,
+  } = useReadContract({
     address: MEGAPOT_ADDRESS,
     abi: megapotAbi,
     functionName: "lastJackpotEndTime",
   });
 
   // Read round duration from contract
-  const { data: roundDurationInSeconds } = useReadContract({
+  const {
+    data: roundDurationInSeconds,
+    isFetched: isFetchedRoundDuration,
+  } = useReadContract({
     address: MEGAPOT_ADDRESS,
     abi: megapotAbi,
     functionName: "roundDurationInSeconds",
   });
+
+  // Loading state for countdown
+  const isLoading = !isFetchedLastJackpot || !isFetchedRoundDuration;
 
   // Calculate next draw time from contract data
   const nextDrawAt = useMemo(() => {
@@ -49,7 +59,7 @@ const useNextDrawCountdown = () => {
 
   const countdown = useMemo(() => {
     if (!nextDrawAt) {
-      return "Loading...";
+      return null; // Return null when loading, let component show skeleton
     }
     const remaining = nextDrawAt - now;
     if (remaining <= 0) {
@@ -58,7 +68,7 @@ const useNextDrawCountdown = () => {
     return formatCountdown(remaining);
   }, [nextDrawAt, now]);
 
-  return { countdown, nextDrawAt };
+  return { countdown, nextDrawAt, isLoading };
 };
 
 export default useNextDrawCountdown;

@@ -1,9 +1,10 @@
 import styles from "@/app/page.module.css";
 import { ClockIcon, SparkleIcon } from "./Icons";
 import AnimatedNumber from "./AnimatedNumber";
+import Skeleton from "./Skeleton";
 
 const formatDrawTime = (timestamp) => {
-  if (!timestamp) return "";
+  if (!timestamp) return null;
   const date = new Date(timestamp);
   const timeStr = date.toLocaleTimeString("en-US", {
     hour: "numeric",
@@ -25,7 +26,12 @@ export default function PlayLotteryCard({
   onClaimClick,
   isConnected,
   isWriting,
+  isLoadingJackpot,
+  isLoadingUserData,
+  isLoadingCountdown,
 }) {
+  const drawTimeLabel = formatDrawTime(nextDrawAt);
+
   return (
     <div className={styles.card}>
       <div className={styles.cardHeader}>
@@ -40,7 +46,13 @@ export default function PlayLotteryCard({
 
       <div className={styles.heroStat}>
         <span className={styles.heroLabel}>Jackpot</span>
-        <span className={styles.heroValueLarge}>{jackpotLabel}</span>
+        <span className={styles.heroValueLarge}>
+          {isLoadingJackpot ? (
+            <Skeleton variant="valueLarge" />
+          ) : (
+            jackpotLabel
+          )}
+        </span>
       </div>
 
       <button
@@ -55,16 +67,26 @@ export default function PlayLotteryCard({
         <div className={styles.countdownSection}>
           <div className={styles.countdownLabel}>
             <ClockIcon size={14} className={styles.countdownIcon} />
-            <span className={styles.muted}>Next Drawing: {formatDrawTime(nextDrawAt)}</span>
+            <span className={styles.muted}>
+              Next Drawing: {drawTimeLabel || "–"}
+            </span>
           </div>
           <span className={styles.countdown}>
-            <AnimatedNumber value={countdown} duration={300} />
+            {isLoadingCountdown || !countdown ? (
+              <Skeleton variant="heading" width="110px" />
+            ) : (
+              <AnimatedNumber value={countdown} duration={300} />
+            )}
           </span>
         </div>
-        <span className={`${styles.pill} ${entered ? "" : styles.warning}`}>
-          {entered
-            ? `${ticketCount} ticket${ticketCount !== 1 ? "s" : ""} entered`
-            : "Not entered"}
+        <span className={styles.entryPill}>
+          {isConnected && !isLoadingUserData && (
+            <span className={`${styles.pill} ${entered ? "" : styles.warning}`}>
+              {entered
+                ? `${ticketCount} ticket${ticketCount !== 1 ? "s" : ""} entered`
+                : "Not entered"}
+            </span>
+          )}
         </span>
       </div>
 

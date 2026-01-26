@@ -1,5 +1,6 @@
 import Image from "next/image";
 import styles from "@/app/page.module.css";
+import Skeleton from "./Skeleton";
 
 export default function Header({
   isConnected,
@@ -11,6 +12,7 @@ export default function Header({
   isSwitching,
   onSwitchChain,
   onWalletClick,
+  isLoadingBalance,
 }) {
   const showNetworkAction = isConnected && !isOnBase;
 
@@ -51,7 +53,15 @@ export default function Header({
             {isConnected ? walletLabel : "Connect wallet"}
           </span>
           <span className={styles.walletBalance}>
-            {isConnected ? walletBalanceLabel : "$0.00"}
+            {isConnected ? (
+              isLoadingBalance ? (
+                <Skeleton variant="balance" width="50px" />
+              ) : (
+                walletBalanceLabel
+              )
+            ) : (
+              "$0.00"
+            )}
           </span>
           <span className={styles.walletCaret} />
         </button>

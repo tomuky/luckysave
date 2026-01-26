@@ -13,6 +13,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "@/components/Icons";
+import { SkeletonTableRow } from "@/components/Skeleton";
 
 const TYPE_ICONS = {
   tickets: TicketIcon,
@@ -46,8 +47,22 @@ export default function WalletHistoryCard({ address, isConnected }) {
       {!isConnected ? (
         <p className={styles.muted}>Connect wallet to view history</p>
       ) : isLoading ? (
-        <div className={styles.historyLoading}>
-          <span className={styles.muted}>Loading transactions...</span>
+        <div className={styles.historyTableWrapper}>
+          <table className={styles.historyTable}>
+            <thead>
+              <tr>
+                <th>Event</th>
+                <th>Amount</th>
+                <th className={styles.hideOnMobile}>Tx</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <SkeletonTableRow />
+              <SkeletonTableRow />
+              <SkeletonTableRow />
+            </tbody>
+          </table>
         </div>
       ) : error ? (
         <p className={styles.muted}>{error}</p>
