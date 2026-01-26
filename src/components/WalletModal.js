@@ -52,7 +52,7 @@ export default function WalletModal({
           ) : (
             <>
               <div className={styles.muted}>
-                Connect your wallet to start saving.
+                Connect your wallet to start winning or saving.
               </div>
               <button
                 className={styles.buttonPrimary}
@@ -63,10 +63,6 @@ export default function WalletModal({
               </button>
             </>
           )}
-          <div className={styles.muted}>
-            USDC: {usdcAddress.slice(0, 10)}... | Aave Pool:{" "}
-            {aavePoolAddress.slice(0, 10)}...
-          </div>
         </div>
       </div>
     </div>
