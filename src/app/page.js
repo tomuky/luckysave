@@ -157,9 +157,9 @@ export default function Home() {
     ? currency.format(Number(formatUnits(winningsClaimable, USDC_DECIMALS)))
     : null;
 
-  // Ticket count (convert from bps - assuming 1 ticket = 100 bps = $1)
+  // Ticket count: 7000 bps = 1 ticket ($1 spent, 70% enters pool after 30% fees)
   const ticketsPurchasedBps = usersInfo?.[0] || 0n;
-  const ticketCount = Number(ticketsPurchasedBps) / 100;
+  const ticketCount = Math.floor(Number(ticketsPurchasedBps) / 7000);
 
   // Jackpot = max(lpPoolTotal, userPoolTotal)
   const lpPool = lpPoolTotal || 0n;
@@ -295,6 +295,7 @@ export default function Home() {
         onClose={() => setTicketModalOpen(false)}
         usdcBalance={usdcBalance}
         usdcBalanceLabel={usdcBalanceLabel}
+        jackpotAmount={jackpotNum}
         onSuccess={handleTicketSuccess}
       />
     </div>

@@ -28,6 +28,7 @@ export default function BuyTicketsModal({
   onClose,
   usdcBalance,
   usdcBalanceLabel,
+  jackpotAmount,
   onSuccess,
 }) {
   const { address } = useAccount();
@@ -57,6 +58,14 @@ export default function BuyTicketsModal({
   const maxTickets = usdcBalance
     ? Math.floor(Number(usdcBalance) / 10 ** USDC_DECIMALS / TICKET_PRICE)
     : 100;
+
+  // Odds formula from Megapot docs: odds = jackpot / (0.7 × tickets)
+  const oddsRatio = jackpotAmount > 0 && ticketCount > 0
+    ? Math.round(jackpotAmount / (0.7 * ticketCount))
+    : null;
+  const oddsLabel = oddsRatio
+    ? `1 in ${oddsRatio.toLocaleString()}`
+    : null;
 
   const needsApproval = !allowance || allowance < parsedAmount;
   const canContinue =
@@ -153,6 +162,12 @@ export default function BuyTicketsModal({
             <div className={styles.balanceHint}>
               <span className={styles.muted}>Available: {usdcBalanceLabel}</span>
             </div>
+            {oddsLabel && (
+              <div className={styles.oddsDisplay}>
+                <span className={styles.muted}>Your odds:</span>
+                <span className={styles.oddsValue}>{oddsLabel}</span>
+              </div>
+            )}
             {error && <div className={styles.errorText}>{error}</div>}
             <button
               className={styles.buttonPrimary}

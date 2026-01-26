@@ -18,7 +18,9 @@ export default function PlayLotteryCard({
       <div className={styles.cardHeader}>
         <h2>Play Lottery</h2>
         <span className={`${styles.pill} ${entered ? "" : styles.warning}`}>
-          {entered ? `Entered` : "Not entered"}
+          {entered
+            ? `${ticketCount} ticket${ticketCount !== 1 ? "s" : ""} entered`
+            : "Not entered"}
         </span>
       </div>
 
@@ -26,14 +28,6 @@ export default function PlayLotteryCard({
         <span className={styles.heroLabel}>Jackpot</span>
         <span className={styles.heroValueLarge}>{jackpotLabel}</span>
       </div>
-
-      {entered && ticketCount > 0 && (
-        <div className={styles.ticketStatus}>
-          <span className={styles.muted}>
-            {ticketCount} ticket{ticketCount !== 1 ? "s" : ""} this round
-          </span>
-        </div>
-      )}
 
       <button
         className={styles.buttonPrimary}

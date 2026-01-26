@@ -575,6 +575,23 @@
   justify-content: space-between;
 }
 
+/* Odds display */
+.oddsDisplay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px;
+  background: var(--card-bg);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.oddsValue {
+  font-weight: 600;
+  color: var(--foreground);
+}
+
 .maxButton {
   font-size: 12px;
   font-weight: 600;
