@@ -291,6 +291,10 @@ export default function Home() {
             isConnected={isReadyForActions && isOnBase}
           />
         </section>
+
+        <footer className={styles.disclaimer}>
+          This interface does not bypass any geographic or legal restrictions. Users are responsible for compliance.
+        </footer>
       </div>
 
       {/* Wallet Modal */}

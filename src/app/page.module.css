@@ -750,6 +750,14 @@
   font-weight: 600;
 }
 
+/* Disclaimer */
+.disclaimer {
+  text-align: center;
+  font-size: 12px;
+  color: #999;
+  padding-top: 12px;
+}
+
 /* Need Wallet Card */
 .needWalletCard {
   padding: 20px 28px;
