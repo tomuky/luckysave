@@ -1,19 +1,24 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { parseUnits } from "viem";
+import { useState, useMemo, useEffect } from "react";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
+import { base } from "wagmi/chains";
+
 import styles from "@/app/page.module.css";
 import StepIndicator from "./StepIndicator";
 import { CheckIcon, CloseIcon, PlusIcon, MinusIcon } from "./Icons";
 import AnimatedNumber from "./AnimatedNumber";
 import {
-  MEGAPOT_ADDRESS,
-  MEGAPOT_REFERRER,
+  MEGAPOT_RANDOM_TICKET_BUYER_ADDRESS,
+  MEGAPOT_SOURCE_BYTES32,
   USDC_ADDRESS,
   USDC_DECIMALS,
 } from "@/lib/constants";
-import { erc20Abi, megapotAbi } from "@/lib/abis";
+import { buildReferralTxArgs } from "@/lib/megapotReferral";
+import { erc20Abi } from "@/lib/abis";
+import { megapotRandomTicketBuyerAbi } from "@/lib/megapotV2Abi";
+
+const MAX_LINES = 10;
 
 const STEPS = [
   { id: "tickets", label: "Tickets" },
@@ -22,85 +27,86 @@ const STEPS = [
   { id: "done", label: "Done" },
 ];
 
-const TICKET_PRICE = 1; // $1 per ticket
-
 export default function BuyTicketsModal({
   isOpen,
   onClose,
   usdcBalance,
   usdcBalanceLabel,
-  jackpotAmount,
+  ticketPriceWei,
+  bonusballMax: _bonusballMax,
+  inviterAddress,
   onSuccess,
 }) {
   const { address } = useAccount();
   const { writeContractAsync, isPending: isWriting } = useWriteContract();
 
-  const [currentStep, setCurrentStep] = useState(0);
+  const [stepIdx, setStepIdx] = useState(0);
   const [ticketCount, setTicketCount] = useState(1);
   const [error, setError] = useState("");
 
+  const spender = MEGAPOT_RANDOM_TICKET_BUYER_ADDRESS;
+
+  const parsedAmount = useMemo(() => {
+    if (!ticketPriceWei || ticketCount < 1) return 0n;
+    return ticketPriceWei * BigInt(ticketCount);
+  }, [ticketPriceWei, ticketCount]);
+
   const { data: allowance } = useReadContract({
+    chainId: base.id,
     address: USDC_ADDRESS,
     abi: erc20Abi,
     functionName: "allowance",
-    args: address ? [address, MEGAPOT_ADDRESS] : undefined,
-    query: { enabled: Boolean(address) },
+    args: address ? [address, spender] : undefined,
+    query: { enabled: Boolean(address && isOpen) },
   });
 
-  const totalPrice = ticketCount * TICKET_PRICE;
-  const parsedAmount = useMemo(() => {
-    try {
-      return parseUnits(totalPrice.toString(), USDC_DECIMALS);
-    } catch {
-      return 0n;
+  const priceLabel = ticketPriceWei
+    ? (Number(ticketPriceWei) / 10 ** USDC_DECIMALS).toFixed(2)
+    : "–";
+
+  const totalUsdcLabel = useMemo(() => {
+    if (!parsedAmount) return "0.00";
+    return (Number(parsedAmount) / 10 ** USDC_DECIMALS).toFixed(2);
+  }, [parsedAmount]);
+
+  const maxLines = useMemo(() => {
+    if (!usdcBalance || !ticketPriceWei || ticketPriceWei === 0n) {
+      return MAX_LINES;
     }
-  }, [totalPrice]);
+    const per = Number(ticketPriceWei);
+    const bal = Number(usdcBalance);
+    return Math.min(MAX_LINES, Math.max(1, Math.floor(bal / per)));
+  }, [usdcBalance, ticketPriceWei]);
 
-  const maxTickets = usdcBalance
-    ? Math.floor(Number(usdcBalance) / 10 ** USDC_DECIMALS / TICKET_PRICE)
-    : 100;
-
-  // Odds formula from Megapot docs: odds = jackpot / (0.7 × tickets)
-  const oddsRatio = jackpotAmount > 0 && ticketCount > 0
-    ? Math.round(jackpotAmount / (0.7 * ticketCount))
-    : null;
-  const oddsLabel = oddsRatio
-    ? `1 in ${oddsRatio.toLocaleString()}`
-    : null;
+  useEffect(() => {
+    if (!isOpen) return;
+    setStepIdx(0);
+    setTicketCount(1);
+    setError("");
+  }, [isOpen]);
 
   const needsApproval = !allowance || allowance < parsedAmount;
   const canContinue =
-    ticketCount > 0 && (!usdcBalance || usdcBalance >= parsedAmount);
-
-  const handleIncrement = () => {
-    if (ticketCount < maxTickets) {
-      setTicketCount((c) => c + 1);
-    }
-  };
-
-  const handleDecrement = () => {
-    if (ticketCount > 1) {
-      setTicketCount((c) => c - 1);
-    }
-  };
+    ticketCount >= 1 &&
+    ticketCount <= maxLines &&
+    (!usdcBalance || usdcBalance >= parsedAmount);
 
   const handleContinue = () => {
-    if (!canContinue) return;
     setError("");
-    // Skip approve step if already approved
-    setCurrentStep(needsApproval ? 1 : 2);
+    setStepIdx(needsApproval ? 1 : 2);
   };
 
   const handleApprove = async () => {
     setError("");
     try {
       await writeContractAsync({
+        chainId: base.id,
         address: USDC_ADDRESS,
         abi: erc20Abi,
         functionName: "approve",
-        args: [MEGAPOT_ADDRESS, parsedAmount],
+        args: [spender, parsedAmount],
       });
-      setCurrentStep(2);
+      setStepIdx(2);
     } catch (err) {
       setError(err?.shortMessage || err?.message || "Approval failed");
     }
@@ -108,163 +114,151 @@ export default function BuyTicketsModal({
 
   const handleBuy = async () => {
     setError("");
+    const { referrers, referralSplit } = buildReferralTxArgs(
+      address,
+      inviterAddress
+    );
     try {
       await writeContractAsync({
-        address: MEGAPOT_ADDRESS,
-        abi: megapotAbi,
-        functionName: "purchaseTickets",
-        args: [MEGAPOT_REFERRER, parsedAmount, address],
+        chainId: base.id,
+        address: MEGAPOT_RANDOM_TICKET_BUYER_ADDRESS,
+        abi: megapotRandomTicketBuyerAbi,
+        functionName: "buyTickets",
+        args: [
+          BigInt(ticketCount),
+          address,
+          referrers,
+          referralSplit,
+          MEGAPOT_SOURCE_BYTES32,
+        ],
       });
-      setCurrentStep(3);
+      setStepIdx(3);
       onSuccess?.();
     } catch (err) {
       setError(err?.shortMessage || err?.message || "Purchase failed");
     }
   };
 
-  const handleClose = () => {
-    setCurrentStep(0);
-    setTicketCount(1);
-    setError("");
-    onClose();
-  };
+  const handleClose = () => onClose();
 
   if (!isOpen) return null;
-
-  const renderStepContent = () => {
-    switch (STEPS[currentStep].id) {
-      case "tickets":
-        return (
-          <div className={styles.stepContent}>
-            <h4 className={styles.stepTitle}>Select Tickets</h4>
-            <div className={styles.ticketSelector}>
-              <button
-                type="button"
-                className={styles.ticketButton}
-                onClick={handleDecrement}
-                disabled={ticketCount <= 1}
-              >
-                <MinusIcon size={16} />
-              </button>
-              <span className={styles.ticketCount}>
-                <AnimatedNumber value={ticketCount} duration={300} />
-              </span>
-              <button
-                type="button"
-                className={styles.ticketButton}
-                onClick={handleIncrement}
-                disabled={ticketCount >= maxTickets}
-              >
-                <PlusIcon size={16} />
-              </button>
-            </div>
-            <div className={styles.ticketPriceDisplay}>
-              <span className={styles.muted}>${TICKET_PRICE} per ticket</span>
-              <span className={styles.ticketTotal}>
-                = $<AnimatedNumber value={totalPrice} duration={300} /> USDC
-              </span>
-            </div>
-            <div className={styles.balanceHint}>
-              <span className={styles.muted}>Available: {usdcBalanceLabel}</span>
-            </div>
-            {oddsRatio && (
-              <div className={styles.oddsDisplay}>
-                <span className={styles.muted}>Your odds:</span>
-                <span className={styles.oddsValue}>
-                  1 in <AnimatedNumber value={oddsRatio.toLocaleString()} duration={300} />
-                </span>
-              </div>
-            )}
-            {error && <div className={styles.errorText}>{error}</div>}
-            <button
-              className={styles.buttonPrimary}
-              onClick={handleContinue}
-              disabled={!canContinue}
-            >
-              Continue
-            </button>
-          </div>
-        );
-
-      case "approve":
-        return (
-          <div className={styles.stepContent}>
-            <h4 className={styles.stepTitle}>Approve USDC</h4>
-            <p className={styles.stepDescription}>
-              Allow access to ${totalPrice} USDC for ticket purchase.
-            </p>
-            {error && <div className={styles.errorText}>{error}</div>}
-            <button
-              className={styles.buttonPrimary}
-              onClick={handleApprove}
-              disabled={isWriting}
-            >
-              {isWriting ? "Approving..." : "Approve USDC"}
-            </button>
-          </div>
-        );
-
-      case "buy":
-        return (
-          <div className={styles.stepContent}>
-            <h4 className={styles.stepTitle}>Buy Tickets</h4>
-            <p className={styles.stepDescription}>
-              Purchase {ticketCount} ticket{ticketCount !== 1 ? "s" : ""} for $
-              {totalPrice}.
-            </p>
-            {error && <div className={styles.errorText}>{error}</div>}
-            <button
-              className={styles.buttonPrimary}
-              onClick={handleBuy}
-              disabled={isWriting}
-            >
-              {isWriting ? "Buying..." : "Buy Tickets"}
-            </button>
-          </div>
-        );
-
-      case "done":
-        return (
-          <div className={styles.stepContent}>
-            <div className={styles.successIcon}>
-              <CheckIcon size={32} />
-            </div>
-            <h4 className={styles.stepTitle}>You're In!</h4>
-            <p className={styles.stepDescription}>
-              Successfully purchased {ticketCount} ticket
-              {ticketCount !== 1 ? "s" : ""}.
-            </p>
-            <p className={styles.stepDescriptionMuted}>
-              Good luck in the next drawing!
-            </p>
-            <button className={styles.buttonPrimary} onClick={handleClose}>
-              Done
-            </button>
-          </div>
-        );
-
-      default:
-        return null;
-    }
-  };
 
   return (
     <div className={styles.modalOverlay} onClick={handleClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <h3>Buy Lottery Tickets</h3>
-          <button
-            className={styles.modalClose}
-            onClick={handleClose}
-            type="button"
-          >
+          <h3>Buy tickets</h3>
+          <button className={styles.modalClose} onClick={handleClose} type="button">
             <CloseIcon size={16} />
           </button>
         </div>
 
-        <StepIndicator steps={STEPS} currentStepIndex={currentStep} />
+        <StepIndicator steps={STEPS} currentStepIndex={stepIdx} />
 
-        <div className={styles.modalBody}>{renderStepContent()}</div>
+        <div className={styles.modalBody}>
+          {stepIdx === 0 && (
+            <div className={styles.stepContent}>
+              <h4 className={styles.stepTitle}>Quick pick</h4>
+              <p className={styles.stepDescription}>
+                Random lines for the current draw (${priceLabel} each, exact
+                price from pool).
+              </p>
+              <div className={styles.ticketSelector}>
+                <button
+                  type="button"
+                  className={styles.ticketButton}
+                  onClick={() => setTicketCount((c) => Math.max(1, c - 1))}
+                  disabled={ticketCount <= 1}
+                >
+                  <MinusIcon size={16} />
+                </button>
+                <span className={styles.ticketCount}>
+                  <AnimatedNumber value={ticketCount} duration={300} />
+                </span>
+                <button
+                  type="button"
+                  className={styles.ticketButton}
+                  onClick={() =>
+                    setTicketCount((c) => Math.min(maxLines, c + 1))
+                  }
+                  disabled={ticketCount >= maxLines}
+                >
+                  <PlusIcon size={16} />
+                </button>
+              </div>
+              <div className={styles.ticketPriceDisplay}>
+                <span className={styles.muted}>${priceLabel} per line</span>
+                <span className={styles.ticketTotal}>
+                  = ${totalUsdcLabel} USDC
+                </span>
+              </div>
+              <div className={styles.balanceHint}>
+                <span className={styles.muted}>Available: {usdcBalanceLabel}</span>
+              </div>
+              {error && <div className={styles.errorText}>{error}</div>}
+              <button
+                className={styles.buttonPrimary}
+                onClick={handleContinue}
+                disabled={!canContinue}
+                type="button"
+              >
+                Continue
+              </button>
+            </div>
+          )}
+          {stepIdx === 1 && (
+            <div className={styles.stepContent}>
+              <h4 className={styles.stepTitle}>Approve USDC</h4>
+              <p className={styles.stepDescription}>
+                Allow {totalUsdcLabel} USDC for this purchase.
+              </p>
+              {error && <div className={styles.errorText}>{error}</div>}
+              <button
+                className={styles.buttonPrimary}
+                onClick={handleApprove}
+                disabled={isWriting}
+                type="button"
+              >
+                {isWriting ? "Approving…" : "Approve USDC"}
+              </button>
+            </div>
+          )}
+          {stepIdx === 2 && (
+            <div className={styles.stepContent}>
+              <h4 className={styles.stepTitle}>Buy tickets</h4>
+              <p className={styles.stepDescription}>
+                Confirm {ticketCount} random line{ticketCount !== 1 ? "s" : ""}.
+              </p>
+              {error && <div className={styles.errorText}>{error}</div>}
+              <button
+                className={styles.buttonPrimary}
+                onClick={handleBuy}
+                disabled={isWriting}
+                type="button"
+              >
+                {isWriting ? "Buying…" : "Buy tickets"}
+              </button>
+            </div>
+          )}
+          {stepIdx === 3 && (
+            <div className={styles.stepContent}>
+              <div className={styles.successIcon}>
+                <CheckIcon size={32} />
+              </div>
+              <h4 className={styles.stepTitle}>You are in!</h4>
+              <p className={styles.stepDescription}>
+                {ticketCount} line{ticketCount !== 1 ? "s" : ""} entered.
+              </p>
+              <button
+                className={styles.buttonPrimary}
+                onClick={handleClose}
+                type="button"
+              >
+                Done
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

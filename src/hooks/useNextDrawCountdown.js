@@ -1,74 +1,60 @@
+"use client";
+
 import { useEffect, useMemo, useState } from "react";
 import { useReadContract } from "wagmi";
+import { base } from "wagmi/chains";
 
 import { formatCountdown } from "@/lib/format";
-import { MEGAPOT_ADDRESS } from "@/lib/constants";
-import { megapotAbi } from "@/lib/abis";
+import { MEGAPOT_JACKPOT_ADDRESS } from "@/lib/constants";
+import { megapotJackpotAbi } from "@/lib/megapotV2Abi";
 
-const useNextDrawCountdown = () => {
+export default function useNextDrawCountdown() {
   const [now, setNow] = useState(Date.now());
 
-  // Read last jackpot end time from contract
-  const {
-    data: lastJackpotEndTime,
-    refetch: refetchLastJackpotEndTime,
-    isFetched: isFetchedLastJackpot,
-  } = useReadContract({
-    address: MEGAPOT_ADDRESS,
-    abi: megapotAbi,
-    functionName: "lastJackpotEndTime",
+  const { data: currentDrawingId, refetch: refetchDrawingId } = useReadContract({
+    chainId: base.id,
+    address: MEGAPOT_JACKPOT_ADDRESS,
+    abi: megapotJackpotAbi,
+    functionName: "currentDrawingId",
+    query: { enabled: true },
   });
 
-  // Read round duration from contract
-  const {
-    data: roundDurationInSeconds,
-    isFetched: isFetchedRoundDuration,
-  } = useReadContract({
-    address: MEGAPOT_ADDRESS,
-    abi: megapotAbi,
-    functionName: "roundDurationInSeconds",
+  const { data: drawingState, refetch: refetchState } = useReadContract({
+    chainId: base.id,
+    address: MEGAPOT_JACKPOT_ADDRESS,
+    abi: megapotJackpotAbi,
+    functionName: "getDrawingState",
+    args: currentDrawingId !== undefined ? [currentDrawingId] : undefined,
+    query: { enabled: currentDrawingId !== undefined },
   });
 
-  // Loading state for countdown
-  const isLoading = !isFetchedLastJackpot || !isFetchedRoundDuration;
+  const isLoading = currentDrawingId === undefined || !drawingState;
 
-  // Calculate next draw time from contract data
   const nextDrawAt = useMemo(() => {
-    if (!lastJackpotEndTime || !roundDurationInSeconds) {
-      return null;
-    }
-    // Convert from seconds to milliseconds
-    const lastEndMs = Number(lastJackpotEndTime) * 1000;
-    const durationMs = Number(roundDurationInSeconds) * 1000;
-    return lastEndMs + durationMs;
-  }, [lastJackpotEndTime, roundDurationInSeconds]);
+    if (!drawingState?.drawingTime) return null;
+    return Number(drawingState.drawingTime) * 1000;
+  }, [drawingState]);
 
-  // Update current time every second
   useEffect(() => {
     const timer = setInterval(() => {
       const current = Date.now();
       setNow(current);
-
-      // If draw time has passed, refetch contract data
       if (nextDrawAt && current >= nextDrawAt) {
-        refetchLastJackpotEndTime();
+        refetchDrawingId();
+        refetchState();
       }
     }, 1000);
     return () => clearInterval(timer);
-  }, [nextDrawAt, refetchLastJackpotEndTime]);
+  }, [nextDrawAt, refetchDrawingId, refetchState]);
 
   const countdown = useMemo(() => {
-    if (!nextDrawAt) {
-      return null; // Return null when loading, let component show skeleton
-    }
+    if (!nextDrawAt) return null;
     const remaining = nextDrawAt - now;
     if (remaining <= 0) {
-      return "Drawing...";
+      return "Drawing…";
     }
     return formatCountdown(remaining);
   }, [nextDrawAt, now]);
 
   return { countdown, nextDrawAt, isLoading };
-};
-
-export default useNextDrawCountdown;
+}

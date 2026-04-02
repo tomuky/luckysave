@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { formatUnits } from "viem";
 import {
   useAccount,
@@ -23,38 +24,46 @@ import DepositModal from "@/components/DepositModal";
 import WithdrawModal from "@/components/WithdrawModal";
 import BuyTicketsModal from "@/components/BuyTicketsModal";
 import WalletHistoryCard from "@/components/WalletHistoryCard";
+import MegapotDrawPanel from "@/components/MegapotDrawPanel";
 import {
   AAVE_POOL_ADDRESS,
   AAVE_USDC_ATOKEN,
   BASE_CHAIN_ID,
-  MEGAPOT_ADDRESS,
+  MEGAPOT_JACKPOT_ADDRESS,
+  MEGAPOT_TICKET_NFT_ADDRESS,
   USDC_ADDRESS,
   USDC_DECIMALS,
 } from "@/lib/constants";
-import { aavePoolAbi, erc20Abi, megapotAbi } from "@/lib/abis";
-import { currency, formatApy } from "@/lib/format";
+import { aavePoolAbi, erc20Abi } from "@/lib/abis";
+import { megapotJackpotAbi, megapotTicketNftAbi } from "@/lib/megapotV2Abi";
+import { currency, currencyWhole, formatApy } from "@/lib/format";
 import useNextDrawCountdown from "@/hooks/useNextDrawCountdown";
 import useWalletLabel from "@/hooks/useWalletLabel";
+import useReferralInviter from "@/hooks/useReferralInviter";
+import useMegapotClaimScan from "@/hooks/useMegapotClaimScan";
+import { USER_TICKET_DRAWING_IDS_QUERY_KEY } from "@/hooks/useMegapotUserTicketDrawingIds";
+import { TICKET_OUTCOMES_QUERY_KEY } from "@/hooks/useMegapotTicketOutcomes";
+
+const CLAIM_CHUNK = 75;
 
 export default function Home() {
   const { address, isConnected, chainId } = useAccount();
   const { connectors, connect, isPending } = useConnect();
   const { disconnect } = useDisconnect();
   const { switchChainAsync, isPending: isSwitching } = useSwitchChain();
+  const queryClient = useQueryClient();
   const { writeContractAsync, isPending: isWriting } = useWriteContract();
-  const entered = useAppStore((state) => state.entered);
-  const lastResult = useAppStore((state) => state.lastResult);
   const setEntered = useAppStore((state) => state.setEntered);
   const setLastResult = useAppStore((state) => state.setLastResult);
   const triggerRefetch = useAppStore((state) => state.triggerRefetch);
 
-  // Modal states
   const [walletOpen, setWalletOpen] = useState(false);
   const [depositModalOpen, setDepositModalOpen] = useState(false);
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [ticketModalOpen, setTicketModalOpen] = useState(false);
-
-  const { countdown, nextDrawAt, isLoading: isLoadingCountdown } = useNextDrawCountdown();
+  const { inviterAddress } = useReferralInviter();
+  const { countdown, nextDrawAt, isLoading: isLoadingCountdown } =
+    useNextDrawCountdown();
 
   const connector = connectors[0];
   const isReadyForActions = Boolean(isConnected && address);
@@ -64,14 +73,13 @@ export default function Home() {
     chainId === base.id
       ? base.name
       : chainId === baseSepolia.id
-      ? baseSepolia.name
-      : chainId === sepolia.id
-      ? sepolia.name
-      : chainId
-      ? `Chain ${chainId}`
-      : "Unknown network";
+        ? baseSepolia.name
+        : chainId === sepolia.id
+          ? sepolia.name
+          : chainId
+            ? `Chain ${chainId}`
+            : "Unknown network";
 
-  // Contract reads - track loading states for skeleton UI
   const {
     data: usdcBalance,
     refetch: refetchUsdcBalance,
@@ -99,19 +107,6 @@ export default function Home() {
   });
 
   const {
-    data: usersInfo,
-    refetch: refetchUsersInfo,
-    isLoading: isLoadingUsersInfo,
-    isFetched: isFetchedUsersInfo,
-  } = useReadContract({
-    address: MEGAPOT_ADDRESS,
-    abi: megapotAbi,
-    functionName: "usersInfo",
-    args: address ? [address] : undefined,
-    query: { enabled: Boolean(address && isOnBase) },
-  });
-
-  const {
     data: reserveData,
     isLoading: isLoadingReserveData,
     isFetched: isFetchedReserveData,
@@ -123,100 +118,149 @@ export default function Home() {
     query: { enabled: true },
   });
 
-  // Megapot jackpot pool reads
-  const {
-    data: lpPoolTotal,
-    isLoading: isLoadingLpPool,
-    isFetched: isFetchedLpPool,
-  } = useReadContract({
-    address: MEGAPOT_ADDRESS,
-    abi: megapotAbi,
-    functionName: "lpPoolTotal",
-    query: { enabled: true },
+  const { data: currentDrawingId, isFetched: isFetchedDrawingId } =
+    useReadContract({
+      chainId: base.id,
+      address: MEGAPOT_JACKPOT_ADDRESS,
+      abi: megapotJackpotAbi,
+      functionName: "currentDrawingId",
+      query: { enabled: true },
+    });
+
+  const { data: drawingState, isFetched: isFetchedDrawingState } =
+    useReadContract({
+      chainId: base.id,
+      address: MEGAPOT_JACKPOT_ADDRESS,
+      abi: megapotJackpotAbi,
+      functionName: "getDrawingState",
+      args:
+        currentDrawingId !== undefined ? [currentDrawingId] : undefined,
+      query: { enabled: currentDrawingId !== undefined },
+    });
+
+  const { data: userTickets, refetch: refetchUserTickets } = useReadContract({
+    chainId: base.id,
+    address: MEGAPOT_TICKET_NFT_ADDRESS,
+    abi: megapotTicketNftAbi,
+    functionName: "getUserTickets",
+    args:
+      address && currentDrawingId !== undefined
+        ? [address, currentDrawingId]
+        : undefined,
+    query: {
+      enabled: Boolean(address && isOnBase && currentDrawingId !== undefined),
+    },
   });
 
-  const {
-    data: userPoolTotal,
-    isLoading: isLoadingUserPool,
-    isFetched: isFetchedUserPool,
-  } = useReadContract({
-    address: MEGAPOT_ADDRESS,
-    abi: megapotAbi,
-    functionName: "userPoolTotal",
-    query: { enabled: true },
+  const lastCompletedDrawingId =
+    currentDrawingId !== undefined && currentDrawingId >= 2n
+      ? currentDrawingId - 1n
+      : undefined;
+
+  const { data: ticketsLastCompletedDraw } = useReadContract({
+    chainId: base.id,
+    address: MEGAPOT_TICKET_NFT_ADDRESS,
+    abi: megapotTicketNftAbi,
+    functionName: "getUserTickets",
+    args:
+      address && lastCompletedDrawingId !== undefined
+        ? [address, lastCompletedDrawingId]
+        : undefined,
+    query: {
+      enabled: Boolean(
+        address && isOnBase && lastCompletedDrawingId !== undefined
+      ),
+    },
   });
 
-  // Derived loading states for UI components
-  const isLoadingJackpot = !isFetchedLpPool || !isFetchedUserPool;
-  const isLoadingUserData = address && (!isFetchedUsersInfo || !isFetchedUsdcBalance);
+  const enteredLastCompletedDraw = Boolean(
+    ticketsLastCompletedDraw && ticketsLastCompletedDraw.length > 0
+  );
+
+  const claimDrawingIds = useMemo(() => {
+    if (!currentDrawingId || currentDrawingId < 2n) return [];
+    const last = currentDrawingId - 1n;
+    if (enteredLastCompletedDraw) {
+      return [last];
+    }
+    return [];
+  }, [currentDrawingId, enteredLastCompletedDraw]);
+
+  const claimScanEnabled = Boolean(
+    isOnBase && address && claimDrawingIds.length > 0
+  );
+
+  const claimQuery = useMegapotClaimScan({
+    address: isOnBase ? address : undefined,
+    drawingIds: claimDrawingIds,
+    enabled: claimScanEnabled,
+  });
+  const claimData = claimQuery.data;
+
+  const isLoadingJackpot = !isFetchedDrawingState || !drawingState;
   const isLoadingDeposit = address && !isFetchedATokenBalance;
   const isLoadingApy = !isFetchedReserveData;
   const isLoadingWalletBalance = address && !isFetchedUsdcBalance;
 
-  // Sync entered state and winnings from on-chain usersInfo
-  useEffect(() => {
-    if (!usersInfo) return;
-
-    const [ticketsPurchasedTotalBps, winningsClaimable, active] = usersInfo;
-
-    // Sync "entered" with on-chain active status
-    setEntered(active);
-
-    // Format winnings for display
-    if (winningsClaimable > 0n) {
-      const formatted = currency.format(
-        Number(formatUnits(winningsClaimable, USDC_DECIMALS))
-      );
-      setLastResult(formatted);
-    } else {
-      setLastResult(null);
-    }
-  }, [usersInfo, setEntered, setLastResult]);
-
-  // Formatted values
   const usdcBalanceNum = Number(formatUnits(usdcBalance || 0n, USDC_DECIMALS));
   const aTokenBalanceNum = Number(formatUnits(aTokenBalance || 0n, USDC_DECIMALS));
-
   const usdcBalanceLabel = address ? currency.format(usdcBalanceNum) : "--";
   const depositedLabel = address ? currency.format(aTokenBalanceNum) : "--";
-
-  // APY from reserve data
   const currentLiquidityRate = reserveData?.currentLiquidityRate;
   const supplyApyLabel = formatApy(currentLiquidityRate);
-
-  // Check if user has deposit
   const hasDeposit = aTokenBalanceNum > 0;
 
-  // Winnings
-  const winningsClaimable = usersInfo?.[1] || 0n;
-  const hasWinnings = winningsClaimable > 0n;
+  const ticketPriceWei = drawingState?.ticketPrice;
+  const bonusballMax = drawingState?.bonusballMax
+    ? Number(drawingState.bonusballMax)
+    : 12;
+
+  const jackpotNum = drawingState?.prizePool
+    ? Number(formatUnits(drawingState.prizePool, USDC_DECIMALS))
+    : 0;
+  const jackpotLabel = currencyWhole.format(Math.round(jackpotNum));
+
+  const ticketCount = userTickets?.length ?? 0;
+  const hasWinnings = Boolean(claimData?.ticketIds?.length);
   const winningsLabel = hasWinnings
-    ? currency.format(Number(formatUnits(winningsClaimable, USDC_DECIMALS)))
+    ? currency.format(Number(claimData.totalLabel))
     : null;
 
-  // Ticket count: 7000 bps = 1 ticket ($1 spent, 70% enters pool after 30% fees)
-  const ticketsPurchasedBps = usersInfo?.[0] || 0n;
-  const ticketCount = Math.floor(Number(ticketsPurchasedBps) / 7000);
+  useEffect(() => {
+    setEntered(Boolean(ticketCount > 0));
+  }, [ticketCount, setEntered]);
 
-  // Jackpot = max(lpPoolTotal, userPoolTotal)
-  const lpPool = lpPoolTotal || 0n;
-  const userPool = userPoolTotal || 0n;
-  const jackpotAmount = lpPool > userPool ? lpPool : userPool;
-  const jackpotNum = Number(formatUnits(jackpotAmount, USDC_DECIMALS));
-  const jackpotLabel = currency.format(jackpotNum);
+  useEffect(() => {
+    if (hasWinnings && winningsLabel) {
+      setLastResult(winningsLabel);
+    } else if (!hasWinnings) {
+      setLastResult(null);
+    }
+  }, [hasWinnings, winningsLabel, setLastResult]);
 
-  // Handlers
   const handleClaimWinnings = async () => {
-    if (!address || !hasWinnings) return;
+    if (!address || !claimData?.ticketIds?.length) return;
+    const ids = claimData.ticketIds;
     try {
-      await writeContractAsync({
-        address: MEGAPOT_ADDRESS,
-        abi: megapotAbi,
-        functionName: "claimWinnings",
-        args: [],
-      });
-      refetchUsersInfo();
+      for (let i = 0; i < ids.length; i += CLAIM_CHUNK) {
+        const slice = ids.slice(i, i + CLAIM_CHUNK);
+        await writeContractAsync({
+          chainId: base.id,
+          address: MEGAPOT_JACKPOT_ADDRESS,
+          abi: megapotJackpotAbi,
+          functionName: "claimWinnings",
+          args: [slice],
+        });
+      }
       refetchUsdcBalance();
+      refetchUserTickets();
+      await claimQuery.refetch();
+      await queryClient.invalidateQueries({
+        queryKey: [USER_TICKET_DRAWING_IDS_QUERY_KEY],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: [TICKET_OUTCOMES_QUERY_KEY],
+      });
       triggerRefetch();
     } catch (error) {
       console.error("Claim failed:", error);
@@ -237,9 +281,9 @@ export default function Home() {
 
   const handleTicketSuccess = () => {
     refetchUsdcBalance();
-    refetchUsersInfo();
-    setEntered(true);
+    refetchUserTickets();
     triggerRefetch();
+    setEntered(true);
   };
 
   return (
@@ -256,6 +300,7 @@ export default function Home() {
           onSwitchChain={() => switchChainAsync?.({ chainId: BASE_CHAIN_ID })}
           onWalletClick={() => setWalletOpen(true)}
           isLoadingBalance={isLoadingWalletBalance}
+          shareReferralAddress={isOnBase ? address : undefined}
         />
 
         <section className={styles.grid}>
@@ -272,19 +317,23 @@ export default function Home() {
           />
           <PlayLotteryCard
             jackpotLabel={jackpotLabel}
-            entered={entered}
-            ticketCount={ticketCount}
+            onBuyTicketsClick={() => setTicketModalOpen(true)}
+            isConnected={isReadyForActions && isOnBase}
+            isLoadingJackpot={isLoadingJackpot}
             countdown={countdown}
             nextDrawAt={nextDrawAt}
-            winningsLabel={winningsLabel}
-            hasWinnings={hasWinnings}
-            onBuyTicketsClick={() => setTicketModalOpen(true)}
-            onClaimClick={handleClaimWinnings}
-            isConnected={isReadyForActions && isOnBase}
-            isWriting={isWriting}
-            isLoadingJackpot={isLoadingJackpot}
-            isLoadingUserData={isLoadingUserData}
             isLoadingCountdown={isLoadingCountdown}
+          />
+          <MegapotDrawPanel
+            address={address}
+            isConnected={isConnected}
+            isOnBase={isOnBase}
+            currentDrawingId={currentDrawingId}
+            hasWinnings={hasWinnings}
+            winningsLabel={winningsLabel}
+            onClaimClick={handleClaimWinnings}
+            isWriting={isWriting}
+            claimScanLoading={claimQuery.isFetching}
           />
           <WalletHistoryCard
             address={address}
@@ -293,11 +342,11 @@ export default function Home() {
         </section>
 
         <footer className={styles.disclaimer}>
-          This interface does not bypass any geographic or legal restrictions. Users are responsible for compliance.
+          This interface does not bypass any geographic or legal restrictions.
+          Users are responsible for compliance.
         </footer>
       </div>
 
-      {/* Wallet Modal */}
       {walletOpen && (
         <WalletModal
           isConnected={isConnected}
@@ -317,10 +366,10 @@ export default function Home() {
           connectorReady={Boolean(connector)}
           usdcAddress={USDC_ADDRESS}
           aavePoolAddress={AAVE_POOL_ADDRESS}
+          shareReferralAddress={isOnBase ? address : undefined}
         />
       )}
 
-      {/* Deposit Modal */}
       <DepositModal
         isOpen={depositModalOpen}
         onClose={() => setDepositModalOpen(false)}
@@ -330,7 +379,6 @@ export default function Home() {
         onSuccess={handleDepositSuccess}
       />
 
-      {/* Withdraw Modal */}
       <WithdrawModal
         isOpen={withdrawModalOpen}
         onClose={() => setWithdrawModalOpen(false)}
@@ -339,13 +387,14 @@ export default function Home() {
         onSuccess={handleWithdrawSuccess}
       />
 
-      {/* Buy Tickets Modal */}
       <BuyTicketsModal
         isOpen={ticketModalOpen}
         onClose={() => setTicketModalOpen(false)}
         usdcBalance={usdcBalance}
         usdcBalanceLabel={usdcBalanceLabel}
-        jackpotAmount={jackpotNum}
+        ticketPriceWei={ticketPriceWei}
+        bonusballMax={bonusballMax}
+        inviterAddress={inviterAddress}
         onSuccess={handleTicketSuccess}
       />
     </div>

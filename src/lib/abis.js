@@ -83,7 +83,14 @@ export const aavePoolAbi = [
   },
 ];
 
-export const megapotAbi = [
+export {
+  megapotJackpotAbi,
+  megapotRandomTicketBuyerAbi,
+  megapotTicketNftAbi,
+} from "./megapotV2Abi";
+
+/** Megapot v1 — wallet history decode */
+export const megapotV1Abi = [
   {
     type: "function",
     name: "purchaseTickets",
@@ -142,3 +149,6 @@ export const megapotAbi = [
     outputs: [{ name: "", type: "uint256" }],
   },
 ];
+
+export { megapotJackpotAbi as megapotAbi } from "./megapotV2Abi";
+

@@ -46,7 +46,9 @@ export default function EarnInterestCard({
         </div>
       </div>
 
-      <div className={styles.cardActions}>
+      <div
+        className={`${styles.cardActions} ${hasDeposit ? styles.cardActionsSplit : ""}`}
+      >
         <button
           className={styles.buttonPrimary}
           onClick={onDepositClick}
@@ -64,8 +66,6 @@ export default function EarnInterestCard({
           </button>
         )}
       </div>
-
-      <span className={styles.muted}>Earn interest on your USDC</span>
     </div>
   );
 }

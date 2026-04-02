@@ -4,8 +4,27 @@ export const currency = new Intl.NumberFormat("en-US", {
   minimumFractionDigits: 2,
 });
 
+/** USD with no fractional digits (e.g. rounded jackpot). */
+export const currencyWhole = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+});
+
 export const shortAddress = (address) =>
   address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "";
+
+/** @param {number | null | undefined} timestampMs */
+export const formatDrawWallClock = (timestampMs) => {
+  if (!timestampMs) return null;
+  const date = new Date(timestampMs);
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short",
+  });
+};
 
 export const formatCountdown = (ms) => {
   const totalSeconds = Math.max(Math.floor(ms / 1000), 0);

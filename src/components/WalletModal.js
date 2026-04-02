@@ -1,4 +1,5 @@
 import styles from "@/app/page.module.css";
+import ShareReferralButton from "./ShareReferralButton";
 
 export default function WalletModal({
   isConnected,
@@ -15,6 +16,7 @@ export default function WalletModal({
   connectorReady,
   usdcAddress,
   aavePoolAddress,
+  shareReferralAddress,
 }) {
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
@@ -36,6 +38,12 @@ export default function WalletModal({
                     : `Connected on ${currentChainName}`}
                 </div>
               </div>
+              <ShareReferralButton
+                variant="modal"
+                address={shareReferralAddress}
+                disabled={!isOnBase}
+                className={styles.shareReferralModalFullWidth}
+              />
               {!isOnBase && (
                 <button
                   className={styles.buttonPrimary}

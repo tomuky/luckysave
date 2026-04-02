@@ -166,6 +166,80 @@
   gap: 10px;
 }
 
+.cardActions .buttonPrimary,
+.cardActions .buttonSecondary {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Two buttons: same fixed halves as .playLotteryCtaRow (single Deposit stays flex: 1 full width) */
+.cardActionsSplit .buttonPrimary,
+.cardActionsSplit .buttonSecondary {
+  flex: 0 0 calc((100% - 10px) / 2);
+}
+
+.playLotteryCtaRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Same half-and-half math as .cardActions (Deposit + Withdraw): (row − gap) / 2 */
+.playLotteryCtaRow .buttonPrimary,
+.playLotteryCountdown {
+  flex: 0 0 calc((100% - 10px) / 2);
+  min-width: 0;
+}
+
+.playLotteryCountdown {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.playLotteryCountdownLabel {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.25;
+  min-height: 20px;
+  width: 100%;
+}
+
+.playLotteryCountdownLabel span {
+  min-width: 0;
+  text-align: right;
+}
+
+.playLotteryCountdownValue {
+  min-height: 28px;
+  min-width: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.playLotteryCountdownDigits {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.playLotteryCountdownSkeleton {
+  display: inline-block;
+  vertical-align: middle;
+}
+
 /* Hero stat */
 .heroStat {
   display: flex;
@@ -330,7 +404,7 @@
   font-weight: 600;
   text-align: center;
   transition: opacity 0.15s ease;
-  flex: 1;
+  border: 1px solid transparent;
 }
 
 .buttonPrimary:hover:not(:disabled) {
@@ -1152,4 +1226,464 @@
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+
+/* Megapot v2 — share referral */
+.shareReferralHeader {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 13px;
+  border: 1px solid #c4a000;
+  background: linear-gradient(135deg, #fff4b8 0%, #ffe066 100%);
+  color: #4a3b00;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.shareReferralHeader:hover:not(:disabled) {
+  filter: brightness(1.03);
+}
+
+.shareReferralHeader:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (min-width: 768px) {
+  .shareReferralHeader {
+    display: inline-flex;
+  }
+}
+
+.shareReferralModal {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 14px;
+  border: 1px solid #c4a000;
+  background: linear-gradient(135deg, #fff4b8 0%, #ffe066 100%);
+  color: #4a3b00;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+.shareReferralModal:hover:not(:disabled) {
+  filter: brightness(1.03);
+}
+
+.shareReferralModal:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (min-width: 768px) {
+  .shareReferralModal {
+    display: none;
+  }
+}
+
+.shareReferralModalFullWidth {
+  width: 100%;
+}
+
+/* Lottery balls */
+.lotteryBallsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.lotteryBall {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f5f5f5;
+  border: 1px solid #d0d0d0;
+  font-weight: 700;
+  font-size: 14px;
+  color: #1f1f1f;
+}
+
+.lotteryBallBonus {
+  background: #dfe8ff;
+  border-color: #a8b8e8;
+}
+
+.lotteryBallMatch {
+  background: #c8f5c8;
+  border-color: #5cb85c;
+}
+
+.lotteryBallAwaiting {
+  opacity: 0.75;
+  animation: ballPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes ballPulse {
+  0%,
+  100% {
+    opacity: 0.75;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.drawPanelRow {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.drawPanelClaimStrip {
+  background: #e8e8e8;
+  border: 1px solid #dadada;
+  border-radius: 24px;
+  padding: 16px 22px;
+}
+
+.drawPanelTwoCards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 22px;
+}
+
+@media (min-width: 768px) {
+  .drawPanelTwoCards {
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+  }
+}
+
+.drawCarousel {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  min-height: 100px;
+  margin-top: 4px;
+}
+
+.drawCarouselNav {
+  flex: 0 0 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  height: 40px;
+  padding: 0;
+  border: 1px solid #cfcfcf;
+  background: #dcdcdc;
+  border-radius: 12px;
+  cursor: pointer;
+  color: #2a2a2a;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.drawCarouselNav:hover:not(:disabled) {
+  background: #d0d0d0;
+  border-color: #c4c4c4;
+}
+
+.drawCarouselNav:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.drawCarouselViewport {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.drawCarouselSlide {
+  animation: drawCarouselEnter 0.38s ease;
+}
+
+@keyframes drawCarouselEnter {
+  from {
+    opacity: 0.55;
+    transform: translateX(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.ticketPillWin {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #c8f5c8;
+  border: 1px solid #5cb85c;
+  color: #1f4a1f;
+}
+
+.ticketPillMuted {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #dcdcdc;
+  border: 1px solid #cfcfcf;
+  color: var(--muted);
+}
+
+.drawPanelDrawId {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0;
+  color: #2a2a2a;
+  letter-spacing: -0.2px;
+}
+
+.drawPanelTitle {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.25;
+}
+
+h2.drawPanelTitle {
+  font-size: 18px;
+  letter-spacing: -0.3px;
+}
+
+.drawPanelMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.drawPanelMetaRow {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-height: 28px;
+}
+
+.drawPanelWeekLink {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.drawPanelWeekLink:hover:not(:disabled) {
+  color: #3a3a3a;
+}
+
+.drawPanelWeekLink:disabled {
+  opacity: 0.55;
+  cursor: default;
+  text-decoration: none;
+}
+
+.drawPanelGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.drawPanelCol {
+  min-width: 0;
+}
+
+.drawPanelBalls {
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.drawPanelBalls .lotteryBallsRow {
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .drawPanelGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  .drawPanelBalls .lotteryBall {
+    width: 38px;
+    height: 38px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 767px) {
+  .drawPanelCol + .drawPanelCol .drawPanelSection {
+    border-top: 1px solid #dadada;
+    padding-top: 16px;
+    margin-top: 4px;
+  }
+}
+
+.drawPanelSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #dadada;
+}
+
+.drawPanelSection:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.drawPanelSubtitle {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.drawPanelLines {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.drawPanelLine {
+  padding: 8px 0;
+}
+
+.ticketLineHeader {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 8px;
+  min-height: 28px;
+}
+
+.mutedSmall {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.linkButton {
+  margin-top: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #5a5a5a;
+  text-decoration: underline;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.linkButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.buyModeRow {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (min-width: 480px) {
+  .buyModeRow {
+    flex-direction: row;
+  }
+}
+
+.setupActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.pickLinesScroll {
+  max-height: 240px;
+  overflow-y: auto;
+  margin: 8px 0;
+  padding-right: 4px;
+}
+
+.pickLineBlock {
+  margin-bottom: 12px;
+}
+
+.pickLineHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.pickNormalsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pickNumInput {
+  width: 40px;
+  height: 40px;
+  text-align: center;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.pickBonusInput {
+  width: 44px;
+  background: #eef2ff;
+}
+
+.buttonTiny {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1px solid #bbb;
+  background: #f0f0f0;
+  cursor: pointer;
+}
+
+.buttonTiny:hover {
+  background: #e4e4e4;
 }

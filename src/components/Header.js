@@ -1,6 +1,7 @@
 import Image from "next/image";
 import styles from "@/app/page.module.css";
 import Skeleton from "./Skeleton";
+import ShareReferralButton from "./ShareReferralButton";
 
 export default function Header({
   isConnected,
@@ -13,6 +14,7 @@ export default function Header({
   onSwitchChain,
   onWalletClick,
   isLoadingBalance,
+  shareReferralAddress,
 }) {
   const showNetworkAction = isConnected && !isOnBase;
 
@@ -44,6 +46,11 @@ export default function Header({
             </button>
           </div>
         )}
+        <ShareReferralButton
+          variant="header"
+          address={shareReferralAddress}
+          disabled={!isConnected || !isOnBase}
+        />
         <button
           className={styles.walletPill}
           onClick={onWalletClick}
