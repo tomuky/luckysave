@@ -140,7 +140,6 @@ export default function MegapotDrawPanel({
                   drawPending={draw.drawPending}
                   winNormals={draw.winNormals}
                   winBonus={draw.winBonus}
-                  hideAwaitingPill={isOpenRound}
                   activeTicketIndex={ticketPage}
                 />
               </div>

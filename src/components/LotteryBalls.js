@@ -8,6 +8,7 @@ export default function LotteryBalls({
   pending = false,
   normalMatch = null,
   bonusMatch = null,
+  bonusComparable = false,
   placeholders = false,
   inPanel = false,
 }) {
@@ -37,22 +38,40 @@ export default function LotteryBalls({
 
   const nums = normals?.length === 5 ? normals : [null, null, null, null, null];
 
+  const compareResults =
+    !pending && Array.isArray(normalMatch) && normalMatch.length === 5;
+
+  const normalClassForIndex = (i) => {
+    if (pending) return styles.lotteryBallAwaiting;
+    if (!compareResults) return "";
+    return normalMatch[i]
+      ? styles.lotteryBallMatch
+      : styles.lotteryBallMiss;
+  };
+
+  const bonusExtraClass = () => {
+    if (pending) return styles.lotteryBallAwaiting;
+    if (!compareResults) {
+      return bonusMatch ? styles.lotteryBallMatch : "";
+    }
+    if (bonusComparable) {
+      return bonusMatch ? styles.lotteryBallMatch : styles.lotteryBallMiss;
+    }
+    return bonusMatch ? styles.lotteryBallMatch : "";
+  };
+
   return (
     <div className={rowClass}>
       {nums.map((n, i) => (
         <span
           key={i}
-          className={`${styles.lotteryBall} ${
-            pending ? styles.lotteryBallAwaiting : ""
-          } ${normalMatch?.[i] ? styles.lotteryBallMatch : ""}`}
+          className={`${styles.lotteryBall} ${normalClassForIndex(i)}`}
         >
           {n ?? "–"}
         </span>
       ))}
       <span
-        className={`${styles.lotteryBall} ${styles.lotteryBallBonus} ${
-          pending ? styles.lotteryBallAwaiting : ""
-        } ${bonusMatch ? styles.lotteryBallMatch : ""}`}
+        className={`${styles.lotteryBall} ${styles.lotteryBallBonus} ${bonusExtraClass()}`}
       >
         {bonusball ?? "–"}
       </span>

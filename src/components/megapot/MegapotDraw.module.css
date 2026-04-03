@@ -54,7 +54,7 @@
   background: #e8e8e8;
   color: #2a2a2a;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .drawPanelRail:first-of-type {
@@ -66,7 +66,7 @@
 }
 
 .drawPanelRail:hover:not(:disabled) {
-  background: #dcdcdc;
+  background: #f0f0f0;
 }
 
 .drawPanelRail:disabled {
@@ -139,30 +139,6 @@
   flex: 0 0 auto;
 }
 
-.ticketPillWin {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  background: #c8f5c8;
-  border: 1px solid #5cb85c;
-  color: #1f4a1f;
-}
-
-.ticketPillMuted {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  background: #dcdcdc;
-  border: 1px solid #cfcfcf;
-  color: var(--muted);
-}
-
 .drawPanelBody {
   display: flex;
   flex-direction: column;
@@ -186,6 +162,7 @@
     grid-template-columns: 1fr 1fr;
     column-gap: 28px;
     align-items: end;
+    align-items: center;
   }
 
   .drawPanelLabelRowSecond {
@@ -208,6 +185,7 @@
   gap: 0;
   flex: 1;
   min-height: 0;
+  align-items: center;
 }
 
 .drawPanelColLeft,
@@ -287,13 +265,19 @@
   -webkit-overflow-scrolling: touch;
 }
 
+/* Ticket balls only: hug the row width so outcome shading isn’t wider than the circles */
+.drawPanelColRight .drawPanelBalls {
+  width: auto;
+  max-width: 100%;
+}
+
 @media (min-width: 768px) {
   .drawPanelGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0 28px;
     /* stretch makes short columns inherit row height; empty tickets then sit in a tall flex slot */
-    align-items: start;
+    /* align-items: start; */
   }
 
   .drawPanelColWrap {
@@ -419,15 +403,6 @@
   .drawPanelLine {
     padding: 8px 0;
   }
-
-  /* Match winning-numbers label → balls spacing (no extra band above first row). */
-  .drawPanelLine:first-child {
-    padding-top: 0;
-  }
-
-  .ticketLineHeader {
-    margin-bottom: 10px;
-  }
 }
 
 .drawPanelSubtitle {
@@ -442,6 +417,7 @@
 .drawPanelLines {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 10px;
   min-width: 0;
   width: 100%;
@@ -453,12 +429,35 @@
   width: 100%;
 }
 
-.ticketLineHeader {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  margin-bottom: 6px;
-  min-height: 26px;
+/* Shrink-wrap the colored card to the ball row (no empty band on the right) */
+.drawPanelLine.ticketLineOutcomePending,
+.drawPanelLine.ticketLineOutcomeWin,
+.drawPanelLine.ticketLineOutcomeLoss {
+  width: fit-content;
+  max-width: 100%;
+}
+
+.ticketLineOutcomePending,
+.ticketLineOutcomeWin,
+.ticketLineOutcomeLoss {
+  padding: 8px 8px;
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+
+.ticketLineOutcomePending {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.025);
+}
+
+.ticketLineOutcomeWin {
+  border: 1px solid rgba(72, 145, 72, 0.5);
+  background: rgba(200, 245, 200, 0.4);
+}
+
+.ticketLineOutcomeLoss {
+  border: 1px solid rgba(190, 100, 100, 0.45);
+  background: rgba(253, 238, 238, 0.65);
 }
 
 .drawPanelTicketsLabelRow {
@@ -514,11 +513,12 @@
   border: 1px solid #dadada;
   color: #2a2a2a;
   cursor: pointer;
-  transition: background 0.15s ease, opacity 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
 }
 
 .ticketPagerBtn:hover:not(:disabled) {
-  background: #dcdcdc;
+  background: #f0f0f0;
+  border-color: rgba(42, 42, 42, 0.22);
 }
 
 .ticketPagerBtn:disabled {

@@ -1,12 +1,24 @@
 "use client";
 
-import { formatUnits } from "viem";
-
-import { USDC_DECIMALS } from "@/lib/constants";
-import { currency } from "@/lib/format";
 import drawStyles from "@/components/megapot/MegapotDraw.module.css";
 import LotteryBalls from "@/components/LotteryBalls";
 import MegapotBallRowSkeleton from "@/components/megapot/MegapotBallRowSkeleton";
+
+/** Per-ball match vs winning draw: value appears in winning normals (order-independent). */
+function matchNormalsToWinning(normals, winNormals) {
+  const pool = new Map();
+  for (const w of winNormals) {
+    pool.set(w, (pool.get(w) ?? 0) + 1);
+  }
+  return normals.map((v) => {
+    const n = pool.get(v) ?? 0;
+    if (n > 0) {
+      pool.set(v, n - 1);
+      return true;
+    }
+    return false;
+  });
+}
 
 function TicketLineRow({
   row,
@@ -14,7 +26,6 @@ function TicketLineRow({
   drawPending,
   winNormals,
   winBonus,
-  hideAwaitingPill,
 }) {
   const normals = row.normals?.map((x) => Number(x)) ?? [];
   const bonus = Number(row.bonusball);
@@ -22,29 +33,22 @@ function TicketLineRow({
   const canMatch =
     !drawPending && winNormals?.length === 5 && normals.length === 5;
   const normalMatch = canMatch
-    ? normals.map((v, i) => v === winNormals[i])
+    ? matchNormalsToWinning(normals, winNormals)
     : null;
   const bonusMatch =
     canMatch && winBonus !== null ? bonus === winBonus : false;
+  const bonusComparable = Boolean(canMatch && winBonus !== null);
 
-  const payoutWei = outcome?.payoutWei ? BigInt(outcome.payoutWei) : 0n;
-  const payoutLabel =
-    payoutWei > 0n
-      ? currency.format(Number(formatUnits(payoutWei, USDC_DECIMALS)))
-      : null;
-
-  let pill = null;
-  if (outcome && !outcome.pending && outcome.isWin && payoutLabel) {
-    pill = <span className={drawStyles.ticketPillWin}>Won {payoutLabel}</span>;
-  } else if (outcome && !outcome.pending && !outcome.isWin) {
-    pill = <span className={drawStyles.ticketPillMuted}>No win</span>;
-  } else if (!hideAwaitingPill) {
-    pill = <span className={drawStyles.ticketPillMuted}>Awaiting results</span>;
+  const settled = outcome && !outcome.pending;
+  let outcomeClass = drawStyles.ticketLineOutcomePending;
+  if (settled) {
+    outcomeClass = outcome.isWin
+      ? drawStyles.ticketLineOutcomeWin
+      : drawStyles.ticketLineOutcomeLoss;
   }
 
   return (
-    <div className={drawStyles.drawPanelLine}>
-      {pill ? <div className={drawStyles.ticketLineHeader}>{pill}</div> : null}
+    <div className={`${drawStyles.drawPanelLine} ${outcomeClass}`}>
       <div className={drawStyles.drawPanelBalls}>
         <LotteryBalls
           normals={normals}
@@ -52,6 +56,7 @@ function TicketLineRow({
           pending={drawPending}
           normalMatch={normalMatch}
           bonusMatch={bonusMatch}
+          bonusComparable={bonusComparable}
           inPanel
         />
       </div>
@@ -66,7 +71,6 @@ export default function MegapotTicketLines({
   drawPending,
   winNormals,
   winBonus,
-  hideAwaitingPill,
   activeTicketIndex = 0,
 }) {
   const list = tickets ?? [];
@@ -105,7 +109,6 @@ export default function MegapotTicketLines({
                   drawPending={drawPending}
                   winNormals={winNormals}
                   winBonus={winBonus}
-                  hideAwaitingPill={hideAwaitingPill}
                 />
               ))}
             </div>
