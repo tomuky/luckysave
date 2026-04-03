@@ -6,7 +6,7 @@ import { USDC_DECIMALS } from "@/lib/constants";
 import { currency } from "@/lib/format";
 import drawStyles from "@/components/megapot/MegapotDraw.module.css";
 import LotteryBalls from "@/components/LotteryBalls";
-import Skeleton from "@/components/Skeleton";
+import MegapotBallRowSkeleton from "@/components/megapot/MegapotBallRowSkeleton";
 
 function TicketLineRow({
   row,
@@ -67,22 +67,37 @@ export default function MegapotTicketLines({
   winNormals,
   winBonus,
   hideAwaitingPill,
+  activeTicketIndex = 0,
 }) {
+  const list = tickets ?? [];
+  const safeIndex =
+    list.length > 1
+      ? Math.max(0, Math.min(activeTicketIndex, list.length - 1))
+      : 0;
+  const rowsToShow =
+    list.length > 1 ? [list[safeIndex]] : list;
+
   return (
     <div className={drawStyles.drawPanelColRight}>
       <div className={drawStyles.drawPanelSectionRight}>
         <div
           className={`${drawStyles.drawPanelTicketsBody} ${
-            !loading && !tickets?.length ? drawStyles.drawPanelTicketsBodyEmpty : ""
+            !loading && !list.length ? drawStyles.drawPanelTicketsBodyEmpty : ""
           }`}
         >
           {loading ? (
-            <Skeleton variant="heading" width="180px" />
-          ) : !tickets?.length ? (
-            <p className={drawStyles.drawPanelEmptyTickets}>No tickets for this drawing.</p>
+            <div className={drawStyles.drawPanelLine}>
+              <div className={drawStyles.drawPanelBalls}>
+                <MegapotBallRowSkeleton />
+              </div>
+            </div>
+          ) : !list.length ? (
+            <p className={drawStyles.drawPanelEmptyTickets}>
+              No tickets for this drawing.
+            </p>
           ) : (
             <div className={drawStyles.drawPanelLines}>
-              {tickets.map((row) => (
+              {rowsToShow.map((row) => (
                 <TicketLineRow
                   key={row.ticketId.toString()}
                   row={row}

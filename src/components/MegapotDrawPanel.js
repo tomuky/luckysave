@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import cardStyles from "@/components/ui/Card.module.css";
 import drawStyles from "@/components/megapot/MegapotDraw.module.css";
 import useMegapotViewingDraw from "@/hooks/useMegapotViewingDraw";
@@ -8,6 +10,7 @@ import MegapotDrawPanelDisconnected from "@/components/megapot/MegapotDrawPanelD
 import MegapotDrawPicker from "@/components/megapot/MegapotDrawPicker";
 import MegapotWinningNumbersSection from "@/components/megapot/MegapotWinningNumbersSection";
 import MegapotTicketLines from "@/components/megapot/MegapotTicketLines";
+import MegapotTicketPager from "@/components/megapot/MegapotTicketPager";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/components/Icons";
 
 export default function MegapotDrawPanel({
@@ -35,6 +38,38 @@ export default function MegapotDrawPanel({
     currentDrawingId !== undefined &&
     draw.viewingDrawingId === currentDrawingId;
 
+  const tickets = draw.myTickets ?? [];
+  const ticketCount = tickets.length;
+  const [ticketPage, setTicketPage] = useState(0);
+  const [prevViewingDrawId, setPrevViewingDrawId] = useState(
+    draw.viewingDrawingId,
+  );
+  const [prevTicketCount, setPrevTicketCount] = useState(ticketCount);
+
+  if (draw.viewingDrawingId !== prevViewingDrawId) {
+    setPrevViewingDrawId(draw.viewingDrawingId);
+    setPrevTicketCount(ticketCount);
+    setTicketPage(0);
+  } else if (ticketCount !== prevTicketCount) {
+    setPrevTicketCount(ticketCount);
+    setTicketPage((p) => Math.min(p, Math.max(0, ticketCount - 1)));
+  }
+
+  const showTicketPager =
+    !draw.loadingMyTickets && ticketCount > 1;
+
+  const renderTicketPager = () =>
+    showTicketPager ? (
+      <MegapotTicketPager
+        page={ticketPage}
+        total={ticketCount}
+        onPrev={() => setTicketPage((p) => Math.max(0, p - 1))}
+        onNext={() =>
+          setTicketPage((p) => Math.min(ticketCount - 1, p + 1))
+        }
+      />
+    ) : null;
+
   if (!isConnected || !isOnBase) {
     return <MegapotDrawPanelDisconnected />;
   }
@@ -61,10 +96,6 @@ export default function MegapotDrawPanel({
         </button>
 
         <div className={drawStyles.drawPanelMain}>
-          <div className={cardStyles.cardHeader}>
-            <h2>Lottery Results</h2>
-          </div>
-
           <MegapotDrawPicker
             drawingId={draw.viewingDrawingId}
             drawingTime={draw.viewingDrawingTime}
@@ -75,11 +106,12 @@ export default function MegapotDrawPanel({
           <div className={drawStyles.drawPanelBody}>
             <div className={drawStyles.drawPanelLabelRow}>
               <h3 className={drawStyles.drawPanelSubtitle}>Winning numbers</h3>
-              <h3
-                className={`${drawStyles.drawPanelSubtitle} ${drawStyles.drawPanelLabelRowSecond}`}
+              <div
+                className={`${drawStyles.drawPanelLabelRowSecond} ${drawStyles.drawPanelTicketsLabelRow}`}
               >
-                Your tickets
-              </h3>
+                <h3 className={drawStyles.drawPanelSubtitle}>Your tickets</h3>
+                {renderTicketPager()}
+              </div>
             </div>
             <div className={drawStyles.drawPanelGrid}>
               <div className={drawStyles.drawPanelColWrap}>
@@ -95,11 +127,12 @@ export default function MegapotDrawPanel({
                 />
               </div>
               <div className={drawStyles.drawPanelColWrap}>
-                <h3
-                  className={`${drawStyles.drawPanelSubtitle} ${drawStyles.drawPanelSubtitleMobileOnly}`}
+                <div
+                  className={`${drawStyles.drawPanelTicketsLabelRowMobile} ${drawStyles.drawPanelSubtitleMobileOnly}`}
                 >
-                  Your tickets
-                </h3>
+                  <h3 className={drawStyles.drawPanelSubtitle}>Your tickets</h3>
+                  {renderTicketPager()}
+                </div>
                 <MegapotTicketLines
                   loading={draw.loadingMyTickets}
                   tickets={draw.myTickets}
@@ -108,6 +141,7 @@ export default function MegapotDrawPanel({
                   winNormals={draw.winNormals}
                   winBonus={draw.winBonus}
                   hideAwaitingPill={isOpenRound}
+                  activeTicketIndex={ticketPage}
                 />
               </div>
             </div>

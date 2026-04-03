@@ -29,9 +29,12 @@
   gap: 10px;
 }
 
-.playLotteryCtaRow > :global(button),
+.playLotteryCtaRow > :global(button) {
+  flex: 0 0 auto;
+}
+
 .playLotteryCountdown {
-  flex: 0 0 calc((100% - 10px) / 2);
+  flex: 1 1 0;
   min-width: 0;
 }
 
@@ -58,6 +61,7 @@
 .playLotteryCountdownLabel span {
   min-width: 0;
   text-align: right;
+  white-space: nowrap;
 }
 
 .playLotteryCountdownValue {

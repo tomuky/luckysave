@@ -3,7 +3,7 @@
 import textStyles from "@/components/ui/Text.module.css";
 import drawStyles from "@/components/megapot/MegapotDraw.module.css";
 import LotteryBalls from "@/components/LotteryBalls";
-import Skeleton from "@/components/Skeleton";
+import MegapotBallRowSkeleton from "@/components/megapot/MegapotBallRowSkeleton";
 
 export default function MegapotWinningNumbersSection({
   loading,
@@ -15,7 +15,9 @@ export default function MegapotWinningNumbersSection({
       <div className={drawStyles.drawPanelSectionLeft}>
         <div className={drawStyles.drawPanelWinningBody}>
           {loading ? (
-            <Skeleton variant="heading" width="180px" />
+            <div className={drawStyles.drawPanelBalls}>
+              <MegapotBallRowSkeleton />
+            </div>
           ) : winningLine ? (
             <div className={drawStyles.drawPanelBalls}>
               <LotteryBalls

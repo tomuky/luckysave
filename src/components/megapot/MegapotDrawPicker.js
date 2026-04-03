@@ -29,7 +29,7 @@ export default function MegapotDrawPicker({
       ) : (
         <div className={drawStyles.drawPanelHeadingRow}>
           <h3 className={drawStyles.drawPanelDrawTitle}>
-            Draw #{drawingId.toString()}
+            Lottery Results - Draw #{drawingId.toString()}
           </h3>
           {loadingSchedule ? (
             <Skeleton

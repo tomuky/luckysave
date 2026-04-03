@@ -50,6 +50,22 @@
   color: #4a4a4a;
 }
 
+@media (max-width: 767px) {
+  .rowInPanel {
+    gap: 5px;
+  }
+
+  .rowInPanel .lotteryBall {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+  }
+
+  .rowInPanel .lotteryBallMystery {
+    font-size: 13px;
+  }
+}
+
 @media (min-width: 768px) {
   .rowInPanel .lotteryBall {
     width: 38px;

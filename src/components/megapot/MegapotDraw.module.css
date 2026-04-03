@@ -89,12 +89,9 @@
 
 .drawPanelHeadingRow {
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: left;
-  column-gap: 16px;
-  row-gap: 6px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
 }
 
 .drawPanelDrawTitle {
@@ -105,6 +102,7 @@
   color: #1f1f1f;
   line-height: 1.25;
   flex: 0 1 auto;
+  min-width: 0;
 }
 
 .drawPanelDrawSchedule {
@@ -115,6 +113,26 @@
   line-height: 1.35;
   flex: 0 1 auto;
   max-width: 100%;
+}
+
+@media (min-width: 768px) {
+  .drawPanelHeadingRow {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: flex-start;
+    column-gap: 12px;
+    row-gap: 6px;
+  }
+
+  .drawPanelDrawTitle {
+    flex: 0 1 auto;
+  }
+
+  .drawPanelDrawSchedule {
+    flex: 0 1 auto;
+    max-width: 100%;
+  }
 }
 
 .drawPanelScheduleSkeleton {
@@ -151,6 +169,7 @@
   gap: 8px;
   flex: 1;
   min-height: 0;
+  min-width: 0;
 }
 
 .drawPanelLabelRow {
@@ -203,6 +222,7 @@
   gap: 8px;
   height: 100%;
   min-height: 0;
+  min-width: 0;
 }
 
 .drawPanelWinningBody {
@@ -212,6 +232,8 @@
   justify-content: center;
   align-items: flex-start;
   min-height: 0;
+  min-width: 0;
+  width: 100%;
 }
 
 .drawPanelTicketsBody {
@@ -219,12 +241,16 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  min-height: 5.75rem;
+  min-width: 0;
+  width: 100%;
 }
 
 .drawPanelTicketsBodyEmpty {
+  flex: 0 1 auto;
   justify-content: flex-start;
   align-items: flex-start;
+  height: auto;
+  min-height: 0;
 }
 
 .drawPanelEmptyTickets {
@@ -236,8 +262,27 @@
   text-align: left;
 }
 
+.drawPanelBallSkeletonRow {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.drawPanelBallSkeletonCircle {
+  flex-shrink: 0;
+  width: 36px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  border-radius: 50% !important;
+  box-sizing: border-box;
+}
+
 .drawPanelBalls {
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
+  box-sizing: border-box;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -247,11 +292,39 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0 28px;
-    align-items: stretch;
+    /* stretch makes short columns inherit row height; empty tickets then sit in a tall flex slot */
+    align-items: start;
   }
 
-  .drawPanelTicketsBody {
-    min-height: 6rem;
+  .drawPanelColWrap {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .drawPanelColWrap > .drawPanelColLeft,
+  .drawPanelColWrap > .drawPanelColRight {
+    flex: 0 1 auto;
+    min-height: 0;
+  }
+
+  .drawPanelWinningBody {
+    justify-content: flex-start;
+  }
+
+  .drawPanelSectionRight:has(.drawPanelTicketsBodyEmpty) {
+    height: auto;
+    flex: 0 1 auto;
+  }
+
+  .drawPanelColRight:has(.drawPanelTicketsBodyEmpty) {
+    flex: 0 1 auto;
+  }
+
+  .drawPanelBallSkeletonCircle {
+    width: 38px !important;
+    height: 38px !important;
+    min-height: 38px !important;
   }
 
   .drawPanelColRight {
@@ -261,10 +334,72 @@
 }
 
 @media (max-width: 767px) {
-  .drawPanelColRight .drawPanelSectionRight {
+  .drawPanelMain {
+    padding: 18px 16px;
+    gap: 18px;
+  }
+
+  .drawPanelHeadingRow {
+    row-gap: 8px;
+  }
+
+  /* Stack to content height — avoids a dead flex gap at the card bottom */
+  .drawPanelBody {
+    gap: 14px;
+    flex: 0 1 auto;
+  }
+
+  .drawPanelGrid {
+    flex: 0 1 auto;
+    gap: 0;
+  }
+
+  /*
+   * Put the divider after the winning-numbers block, not between
+   * "YOUR TICKETS" and the balls (sectionRight sat below the label).
+   */
+  .drawPanelGrid > .drawPanelColWrap:nth-child(2) {
     border-top: 1px solid #dadada;
-    padding-top: 14px;
-    margin-top: 6px;
+    padding-top: 16px;
+  }
+
+  .drawPanelSubtitleMobileOnly {
+    margin-bottom: 12px;
+  }
+
+  .drawPanelSectionLeft,
+  .drawPanelSectionRight {
+    gap: 10px;
+    height: auto;
+  }
+
+  .drawPanelWinningBody {
+    flex: 0 1 auto;
+    justify-content: flex-start;
+  }
+
+  .drawPanelTicketsBody {
+    flex: 0 1 auto;
+  }
+
+  .drawPanelBalls {
+    padding: 2px 0 4px;
+  }
+
+  .drawPanelBallSkeletonRow {
+    gap: 5px;
+  }
+
+  .drawPanelBallSkeletonCircle {
+    width: 30px !important;
+    height: 30px !important;
+    min-height: 30px !important;
+  }
+
+  .drawPanelColRight .drawPanelSectionRight {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0;
   }
 
   .drawPanelColRight {
@@ -277,8 +412,21 @@
     width: 40px;
   }
 
-  .drawPanelMain {
-    padding: 18px 16px;
+  .drawPanelLines {
+    gap: 12px;
+  }
+
+  .drawPanelLine {
+    padding: 8px 0;
+  }
+
+  /* Match winning-numbers label → balls spacing (no extra band above first row). */
+  .drawPanelLine:first-child {
+    padding-top: 0;
+  }
+
+  .ticketLineHeader {
+    margin-bottom: 10px;
   }
 }
 
@@ -295,10 +443,14 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  min-width: 0;
+  width: 100%;
 }
 
 .drawPanelLine {
   padding: 4px 0;
+  min-width: 0;
+  width: 100%;
 }
 
 .ticketLineHeader {
@@ -307,4 +459,79 @@
   align-items: center;
   margin-bottom: 6px;
   min-height: 26px;
+}
+
+.drawPanelTicketsLabelRow {
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+.drawPanelTicketsLabelRow .drawPanelSubtitle {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+.drawPanelTicketsLabelRowMobile {
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+.drawPanelTicketsLabelRowMobile .drawPanelSubtitle {
+  margin-bottom: 0;
+}
+
+@media (min-width: 768px) {
+  .drawPanelTicketsLabelRowMobile {
+    display: none;
+  }
+}
+
+.ticketPager {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.ticketPagerBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 10px;
+  background: #e8e8e8;
+  border: 1px solid #dadada;
+  color: #2a2a2a;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.ticketPagerBtn:hover:not(:disabled) {
+  background: #dcdcdc;
+}
+
+.ticketPagerBtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.ticketPagerCount {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  min-width: 3.25em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
