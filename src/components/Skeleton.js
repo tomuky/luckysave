@@ -1,4 +1,5 @@
-import styles from "@/app/page.module.css";
+import styles from "./Skeleton.module.css";
+import responsiveStyles from "@/components/ui/Responsive.module.css";
 
 /**
  * Skeleton loader component with shimmer animation.
@@ -53,7 +54,7 @@ export function SkeletonTableRow({ columns = 4 }) {
         <Skeleton variant="text" width="70px" />
       </td>
       {columns >= 3 && (
-        <td className={styles.hideOnMobile}>
+        <td className={responsiveStyles.hideOnMobile}>
           <Skeleton variant="pill" width="28px" height="28px" />
         </td>
       )}

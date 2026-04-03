@@ -1,6 +1,8 @@
 "use client";
 
-import styles from "@/app/page.module.css";
+import cardStyles from "@/components/ui/Card.module.css";
+import buttonStyles from "@/components/ui/Buttons.module.css";
+import styles from "./PlayLotteryCard.module.css";
 import { formatDrawWallClock } from "@/lib/format";
 import Skeleton from "./Skeleton";
 import AnimatedNumber from "./AnimatedNumber";
@@ -20,10 +22,10 @@ export default function PlayLotteryCard({
     Boolean(countdown) && countdown !== "Drawing…" && countdown.includes(":");
 
   return (
-    <div className={styles.card}>
-      <div className={styles.cardHeader}>
+    <div className={cardStyles.card}>
+      <div className={cardStyles.cardHeader}>
         <h2>Play Lottery</h2>
-        <span className={styles.poweredBy}>
+        <span className={cardStyles.poweredBy}>
           Powered by{" "}
           <a
             href="https://docs.megapot.io/"
@@ -48,7 +50,7 @@ export default function PlayLotteryCard({
 
       <div className={styles.playLotteryCtaRow}>
         <button
-          className={styles.buttonPrimary}
+          className={buttonStyles.buttonPrimary}
           onClick={onBuyTicketsClick}
           disabled={!isConnected}
           type="button"

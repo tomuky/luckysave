@@ -3,7 +3,10 @@
 import { useState, useMemo } from "react";
 import { parseUnits } from "viem";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
-import styles from "@/app/page.module.css";
+import modalStyles from "@/components/ui/Modal.module.css";
+import formStyles from "@/components/ui/Form.module.css";
+import buttonStyles from "@/components/ui/Buttons.module.css";
+import textStyles from "@/components/ui/Text.module.css";
 import StepIndicator from "./StepIndicator";
 import { CheckIcon, CloseIcon } from "./Icons";
 import {
@@ -119,9 +122,9 @@ export default function DepositModal({
     switch (STEPS[currentStep].id) {
       case "amount":
         return (
-          <div className={styles.stepContent}>
-            <h4 className={styles.stepTitle}>Enter Amount</h4>
-            <label className={styles.inputRow}>
+          <div className={formStyles.stepContent}>
+            <h4 className={formStyles.stepTitle}>Enter Amount</h4>
+            <label className={formStyles.inputRow}>
               <input
                 value={amount}
                 onChange={(e) => setAmount(normalizeInput(e.target.value))}
@@ -129,13 +132,13 @@ export default function DepositModal({
                 inputMode="decimal"
                 autoFocus
               />
-              <span className={styles.muted}>USDC</span>
+              <span className={textStyles.muted}>USDC</span>
             </label>
-            <div className={styles.balanceHint}>
-              <span className={styles.muted}>Available: {usdcBalanceLabel}</span>
+            <div className={formStyles.balanceHint}>
+              <span className={textStyles.muted}>Available: {usdcBalanceLabel}</span>
               <button
                 type="button"
-                className={styles.maxButton}
+                className={formStyles.maxButton}
                 onClick={() =>
                   usdcBalance &&
                   setAmount((Number(usdcBalance) / 10 ** USDC_DECIMALS).toString())
@@ -144,9 +147,9 @@ export default function DepositModal({
                 Max
               </button>
             </div>
-            {error && <div className={styles.errorText}>{error}</div>}
+            {error && <div className={formStyles.errorText}>{error}</div>}
             <button
-              className={styles.buttonPrimary}
+              className={buttonStyles.buttonPrimary}
               onClick={handleContinue}
               disabled={!canContinue}
             >
@@ -157,14 +160,14 @@ export default function DepositModal({
 
       case "approve":
         return (
-          <div className={styles.stepContent}>
-            <h4 className={styles.stepTitle}>Approve USDC</h4>
-            <p className={styles.stepDescription}>
+          <div className={formStyles.stepContent}>
+            <h4 className={formStyles.stepTitle}>Approve USDC</h4>
+            <p className={formStyles.stepDescription}>
               Allow access to {amount} USDC for this deposit.
             </p>
-            {error && <div className={styles.errorText}>{error}</div>}
+            {error && <div className={formStyles.errorText}>{error}</div>}
             <button
-              className={styles.buttonPrimary}
+              className={buttonStyles.buttonPrimary}
               onClick={handleApprove}
               disabled={isWriting}
             >
@@ -175,14 +178,14 @@ export default function DepositModal({
 
       case "deposit":
         return (
-          <div className={styles.stepContent}>
-            <h4 className={styles.stepTitle}>Deposit USDC</h4>
-            <p className={styles.stepDescription}>
+          <div className={formStyles.stepContent}>
+            <h4 className={formStyles.stepTitle}>Deposit USDC</h4>
+            <p className={formStyles.stepDescription}>
               Deposit {amount} USDC to start earning {apyLabel} APY.
             </p>
-            {error && <div className={styles.errorText}>{error}</div>}
+            {error && <div className={formStyles.errorText}>{error}</div>}
             <button
-              className={styles.buttonPrimary}
+              className={buttonStyles.buttonPrimary}
               onClick={handleDeposit}
               disabled={isWriting}
             >
@@ -193,15 +196,15 @@ export default function DepositModal({
 
       case "done":
         return (
-          <div className={styles.stepContent}>
-            <div className={styles.successIcon}>
+          <div className={formStyles.stepContent}>
+            <div className={formStyles.successIcon}>
               <CheckIcon size={32} />
             </div>
-            <h4 className={styles.stepTitle}>Successfully Deposited</h4>
-            <p className={styles.stepDescription}>
+            <h4 className={formStyles.stepTitle}>Successfully Deposited</h4>
+            <p className={formStyles.stepDescription}>
               {amount} USDC is now earning {apyLabel} APY.
             </p>
-            <button className={styles.buttonPrimary} onClick={handleClose}>
+            <button className={buttonStyles.buttonPrimary} onClick={handleClose}>
               Done
             </button>
           </div>
@@ -213,12 +216,12 @@ export default function DepositModal({
   };
 
   return (
-    <div className={styles.modalOverlay} onClick={handleClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.modalHeader}>
+    <div className={modalStyles.modalOverlay} onClick={handleClose}>
+      <div className={modalStyles.modal} onClick={(e) => e.stopPropagation()}>
+        <div className={modalStyles.modalHeader}>
           <h3>Deposit USDC</h3>
           <button
-            className={styles.modalClose}
+            className={modalStyles.modalClose}
             onClick={handleClose}
             type="button"
           >
@@ -228,7 +231,7 @@ export default function DepositModal({
 
         <StepIndicator steps={STEPS} currentStepIndex={currentStep} />
 
-        <div className={styles.modalBody}>{renderStepContent()}</div>
+        <div className={modalStyles.modalBody}>{renderStepContent()}</div>
       </div>
     </div>
   );

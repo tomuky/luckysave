@@ -26,6 +26,28 @@ export const formatDrawWallClock = (timestampMs) => {
   });
 };
 
+/** Scheduled draw moment from on-chain `drawingTime` (unix seconds). */
+export const formatDrawingDateTimeLine = (unixSeconds) => {
+  if (unixSeconds === undefined || unixSeconds === null) return null;
+  const sec =
+    typeof unixSeconds === "bigint" ? Number(unixSeconds) : Number(unixSeconds);
+  if (!Number.isFinite(sec) || sec <= 0) return null;
+  const date = new Date(sec * 1000);
+  const datePart = date.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+  const timePart = date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZoneName: "short",
+  });
+  return `${datePart} · ${timePart}`;
+};
+
 export const formatCountdown = (ms) => {
   const totalSeconds = Math.max(Math.floor(ms / 1000), 0);
   const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");

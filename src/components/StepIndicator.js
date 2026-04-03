@@ -1,5 +1,5 @@
 import { CheckIcon } from "./Icons";
-import styles from "@/app/page.module.css";
+import styles from "./StepIndicator.module.css";
 
 export default function StepIndicator({ steps, currentStepIndex }) {
   return (

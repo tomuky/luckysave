@@ -4,7 +4,10 @@ import { useState, useMemo, useEffect } from "react";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { base } from "wagmi/chains";
 
-import styles from "@/app/page.module.css";
+import modalStyles from "@/components/ui/Modal.module.css";
+import formStyles from "@/components/ui/Form.module.css";
+import buttonStyles from "@/components/ui/Buttons.module.css";
+import textStyles from "@/components/ui/Text.module.css";
 import StepIndicator from "./StepIndicator";
 import { CheckIcon, CloseIcon, PlusIcon, MinusIcon } from "./Icons";
 import AnimatedNumber from "./AnimatedNumber";
@@ -144,40 +147,40 @@ export default function BuyTicketsModal({
   if (!isOpen) return null;
 
   return (
-    <div className={styles.modalOverlay} onClick={handleClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.modalHeader}>
+    <div className={modalStyles.modalOverlay} onClick={handleClose}>
+      <div className={modalStyles.modal} onClick={(e) => e.stopPropagation()}>
+        <div className={modalStyles.modalHeader}>
           <h3>Buy tickets</h3>
-          <button className={styles.modalClose} onClick={handleClose} type="button">
+          <button className={modalStyles.modalClose} onClick={handleClose} type="button">
             <CloseIcon size={16} />
           </button>
         </div>
 
         <StepIndicator steps={STEPS} currentStepIndex={stepIdx} />
 
-        <div className={styles.modalBody}>
+        <div className={modalStyles.modalBody}>
           {stepIdx === 0 && (
-            <div className={styles.stepContent}>
-              <h4 className={styles.stepTitle}>Quick pick</h4>
-              <p className={styles.stepDescription}>
+            <div className={formStyles.stepContent}>
+              <h4 className={formStyles.stepTitle}>Quick pick</h4>
+              <p className={formStyles.stepDescription}>
                 Random lines for the current draw (${priceLabel} each, exact
                 price from pool).
               </p>
-              <div className={styles.ticketSelector}>
+              <div className={formStyles.ticketSelector}>
                 <button
                   type="button"
-                  className={styles.ticketButton}
+                  className={formStyles.ticketButton}
                   onClick={() => setTicketCount((c) => Math.max(1, c - 1))}
                   disabled={ticketCount <= 1}
                 >
                   <MinusIcon size={16} />
                 </button>
-                <span className={styles.ticketCount}>
+                <span className={formStyles.ticketCount}>
                   <AnimatedNumber value={ticketCount} duration={300} />
                 </span>
                 <button
                   type="button"
-                  className={styles.ticketButton}
+                  className={formStyles.ticketButton}
                   onClick={() =>
                     setTicketCount((c) => Math.min(maxLines, c + 1))
                   }
@@ -186,18 +189,18 @@ export default function BuyTicketsModal({
                   <PlusIcon size={16} />
                 </button>
               </div>
-              <div className={styles.ticketPriceDisplay}>
-                <span className={styles.muted}>${priceLabel} per line</span>
-                <span className={styles.ticketTotal}>
+              <div className={formStyles.ticketPriceDisplay}>
+                <span className={textStyles.muted}>${priceLabel} per line</span>
+                <span className={formStyles.ticketTotal}>
                   = ${totalUsdcLabel} USDC
                 </span>
               </div>
-              <div className={styles.balanceHint}>
-                <span className={styles.muted}>Available: {usdcBalanceLabel}</span>
+              <div className={formStyles.balanceHint}>
+                <span className={textStyles.muted}>Available: {usdcBalanceLabel}</span>
               </div>
-              {error && <div className={styles.errorText}>{error}</div>}
+              {error && <div className={formStyles.errorText}>{error}</div>}
               <button
-                className={styles.buttonPrimary}
+                className={buttonStyles.buttonPrimary}
                 onClick={handleContinue}
                 disabled={!canContinue}
                 type="button"
@@ -207,14 +210,14 @@ export default function BuyTicketsModal({
             </div>
           )}
           {stepIdx === 1 && (
-            <div className={styles.stepContent}>
-              <h4 className={styles.stepTitle}>Approve USDC</h4>
-              <p className={styles.stepDescription}>
+            <div className={formStyles.stepContent}>
+              <h4 className={formStyles.stepTitle}>Approve USDC</h4>
+              <p className={formStyles.stepDescription}>
                 Allow {totalUsdcLabel} USDC for this purchase.
               </p>
-              {error && <div className={styles.errorText}>{error}</div>}
+              {error && <div className={formStyles.errorText}>{error}</div>}
               <button
-                className={styles.buttonPrimary}
+                className={buttonStyles.buttonPrimary}
                 onClick={handleApprove}
                 disabled={isWriting}
                 type="button"
@@ -224,14 +227,14 @@ export default function BuyTicketsModal({
             </div>
           )}
           {stepIdx === 2 && (
-            <div className={styles.stepContent}>
-              <h4 className={styles.stepTitle}>Buy tickets</h4>
-              <p className={styles.stepDescription}>
+            <div className={formStyles.stepContent}>
+              <h4 className={formStyles.stepTitle}>Buy tickets</h4>
+              <p className={formStyles.stepDescription}>
                 Confirm {ticketCount} random line{ticketCount !== 1 ? "s" : ""}.
               </p>
-              {error && <div className={styles.errorText}>{error}</div>}
+              {error && <div className={formStyles.errorText}>{error}</div>}
               <button
-                className={styles.buttonPrimary}
+                className={buttonStyles.buttonPrimary}
                 onClick={handleBuy}
                 disabled={isWriting}
                 type="button"
@@ -241,16 +244,16 @@ export default function BuyTicketsModal({
             </div>
           )}
           {stepIdx === 3 && (
-            <div className={styles.stepContent}>
-              <div className={styles.successIcon}>
+            <div className={formStyles.stepContent}>
+              <div className={formStyles.successIcon}>
                 <CheckIcon size={32} />
               </div>
-              <h4 className={styles.stepTitle}>You are in!</h4>
-              <p className={styles.stepDescription}>
+              <h4 className={formStyles.stepTitle}>You are in!</h4>
+              <p className={formStyles.stepDescription}>
                 {ticketCount} line{ticketCount !== 1 ? "s" : ""} entered.
               </p>
               <button
-                className={styles.buttonPrimary}
+                className={buttonStyles.buttonPrimary}
                 onClick={handleClose}
                 type="button"
               >

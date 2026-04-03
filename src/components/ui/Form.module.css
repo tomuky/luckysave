@@ -1,0 +1,135 @@
+.inputRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #d7d7d7;
+  border-radius: 16px;
+  padding: 14px 16px;
+  background: #f1f1f1;
+}
+
+.inputRow input {
+  flex: 1;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.balanceHint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.maxButton {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: #e0e0e0;
+  transition: background 0.15s ease;
+}
+
+.maxButton:hover {
+  background: #d5d5d5;
+}
+
+.errorText {
+  font-size: 13px;
+  color: #c53030;
+  padding: 8px 12px;
+  background: #fed7d7;
+  border-radius: 8px;
+  border: 1px solid #feb2b2;
+}
+
+.successIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #d4ecd8;
+  color: var(--success);
+  margin: 0 auto 8px;
+}
+
+.stepContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.stepTitle {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.stepDescription {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.stepDescriptionMuted {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.ticketSelector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 16px 0;
+}
+
+.ticketButton {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #e0e0e0;
+  border: 1px solid #d0d0d0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  transition: background 0.15s ease;
+}
+
+.ticketButton:hover:not(:disabled) {
+  background: #d5d5d5;
+}
+
+.ticketButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ticketCount {
+  font-size: 36px;
+  font-weight: 700;
+  min-width: 60px;
+  text-align: center;
+}
+
+.ticketPriceDisplay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.ticketTotal {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+@media (max-width: 720px) {
+  .inputRow {
+    padding: 14px 16px 14px 12px;
+  }
+}

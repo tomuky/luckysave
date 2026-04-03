@@ -1,5 +1,5 @@
 import Image from "next/image";
-import styles from "@/app/page.module.css";
+import styles from "./Header.module.css";
 import Skeleton from "./Skeleton";
 import ShareReferralButton from "./ShareReferralButton";
 

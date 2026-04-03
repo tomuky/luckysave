@@ -1,0 +1,310 @@
+.drawPanelRow {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.drawPanelClaimStrip {
+  background: #e8e8e8;
+  border: 1px solid #dadada;
+  border-radius: 24px;
+  padding: 16px 22px;
+}
+
+.winningsAlert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #d4ecd8;
+  border: 1px solid #b9dcc1;
+  border-radius: 12px;
+}
+
+.winningsInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.winningsIcon {
+  color: var(--success);
+}
+
+.drawPanelCard {
+  flex-direction: row;
+  align-items: stretch;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+}
+
+.drawPanelRail {
+  flex: 0 0 44px;
+  width: 44px;
+  min-height: 100%;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: #e8e8e8;
+  color: #2a2a2a;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.drawPanelRail:first-of-type {
+  border-right: 1px solid #dadada;
+}
+
+.drawPanelRail:last-of-type {
+  border-left: 1px solid #dadada;
+}
+
+.drawPanelRail:hover:not(:disabled) {
+  background: #dcdcdc;
+}
+
+.drawPanelRail:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.drawPanelMain {
+  flex: 1;
+  min-width: 0;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.drawPanelHeading {
+  min-height: 26px;
+}
+
+.drawPanelHeadingRow {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: left;
+  column-gap: 16px;
+  row-gap: 6px;
+}
+
+.drawPanelDrawTitle {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.3px;
+  color: #1f1f1f;
+  line-height: 1.25;
+  flex: 0 1 auto;
+}
+
+.drawPanelDrawSchedule {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  line-height: 1.35;
+  flex: 0 1 auto;
+  max-width: 100%;
+}
+
+.drawPanelScheduleSkeleton {
+  flex: 0 0 auto;
+}
+
+.ticketPillWin {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #c8f5c8;
+  border: 1px solid #5cb85c;
+  color: #1f4a1f;
+}
+
+.ticketPillMuted {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #dcdcdc;
+  border: 1px solid #cfcfcf;
+  color: var(--muted);
+}
+
+.drawPanelBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+}
+
+.drawPanelLabelRow {
+  display: none;
+}
+
+.drawPanelSubtitleMobileOnly {
+  margin-bottom: 8px;
+}
+
+@media (min-width: 768px) {
+  .drawPanelLabelRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 28px;
+    align-items: end;
+  }
+
+  .drawPanelLabelRowSecond {
+    border-left: 1px solid #dadada;
+    padding-left: 28px;
+  }
+
+  .drawPanelSubtitleMobileOnly {
+    display: none;
+  }
+}
+
+.drawPanelColWrap {
+  min-width: 0;
+}
+
+.drawPanelGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+.drawPanelColLeft,
+.drawPanelColRight {
+  min-width: 0;
+}
+
+.drawPanelSectionLeft,
+.drawPanelSectionRight {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+}
+
+.drawPanelWinningBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 0;
+}
+
+.drawPanelTicketsBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 5.75rem;
+}
+
+.drawPanelTicketsBodyEmpty {
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.drawPanelEmptyTickets {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.45;
+  max-width: 220px;
+  text-align: left;
+}
+
+.drawPanelBalls {
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 768px) {
+  .drawPanelGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 28px;
+    align-items: stretch;
+  }
+
+  .drawPanelTicketsBody {
+    min-height: 6rem;
+  }
+
+  .drawPanelColRight {
+    border-left: 1px solid #dadada;
+    padding-left: 28px;
+  }
+}
+
+@media (max-width: 767px) {
+  .drawPanelColRight .drawPanelSectionRight {
+    border-top: 1px solid #dadada;
+    padding-top: 14px;
+    margin-top: 6px;
+  }
+
+  .drawPanelColRight {
+    border-left: none;
+    padding-left: 0;
+  }
+
+  .drawPanelRail {
+    flex-basis: 40px;
+    width: 40px;
+  }
+
+  .drawPanelMain {
+    padding: 18px 16px;
+  }
+}
+
+.drawPanelSubtitle {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.drawPanelLines {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.drawPanelLine {
+  padding: 4px 0;
+}
+
+.ticketLineHeader {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 6px;
+  min-height: 26px;
+}

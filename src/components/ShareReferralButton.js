@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import styles from "@/app/page.module.css";
+import styles from "./ShareReferralButton.module.css";
 
 export default function ShareReferralButton({
   address,

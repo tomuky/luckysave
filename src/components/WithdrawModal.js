@@ -3,7 +3,10 @@
 import { useState, useMemo } from "react";
 import { parseUnits } from "viem";
 import { useAccount, useWriteContract } from "wagmi";
-import styles from "@/app/page.module.css";
+import modalStyles from "@/components/ui/Modal.module.css";
+import formStyles from "@/components/ui/Form.module.css";
+import buttonStyles from "@/components/ui/Buttons.module.css";
+import textStyles from "@/components/ui/Text.module.css";
 import StepIndicator from "./StepIndicator";
 import { CheckIcon, CloseIcon } from "./Icons";
 import { AAVE_POOL_ADDRESS, USDC_ADDRESS, USDC_DECIMALS } from "@/lib/constants";
@@ -88,9 +91,9 @@ export default function WithdrawModal({
     switch (STEPS[currentStep].id) {
       case "amount":
         return (
-          <div className={styles.stepContent}>
-            <h4 className={styles.stepTitle}>Enter Amount</h4>
-            <label className={styles.inputRow}>
+          <div className={formStyles.stepContent}>
+            <h4 className={formStyles.stepTitle}>Enter Amount</h4>
+            <label className={formStyles.inputRow}>
               <input
                 value={amount}
                 onChange={(e) => setAmount(normalizeInput(e.target.value))}
@@ -98,15 +101,15 @@ export default function WithdrawModal({
                 inputMode="decimal"
                 autoFocus
               />
-              <span className={styles.muted}>USDC</span>
+              <span className={textStyles.muted}>USDC</span>
             </label>
-            <div className={styles.balanceHint}>
-              <span className={styles.muted}>
+            <div className={formStyles.balanceHint}>
+              <span className={textStyles.muted}>
                 Deposited: {depositBalanceLabel}
               </span>
               <button
                 type="button"
-                className={styles.maxButton}
+                className={formStyles.maxButton}
                 onClick={() =>
                   depositBalance &&
                   setAmount(
@@ -117,9 +120,9 @@ export default function WithdrawModal({
                 Max
               </button>
             </div>
-            {error && <div className={styles.errorText}>{error}</div>}
+            {error && <div className={formStyles.errorText}>{error}</div>}
             <button
-              className={styles.buttonPrimary}
+              className={buttonStyles.buttonPrimary}
               onClick={handleContinue}
               disabled={!canContinue}
             >
@@ -130,17 +133,17 @@ export default function WithdrawModal({
 
       case "withdraw":
         return (
-          <div className={styles.stepContent}>
-            <h4 className={styles.stepTitle}>Withdraw USDC</h4>
-            <p className={styles.stepDescription}>
+          <div className={formStyles.stepContent}>
+            <h4 className={formStyles.stepTitle}>Withdraw USDC</h4>
+            <p className={formStyles.stepDescription}>
               Withdraw {amount} USDC to your wallet.
             </p>
-            <p className={styles.stepDescriptionMuted}>
+            <p className={formStyles.stepDescriptionMuted}>
               Your remaining deposit will continue earning interest.
             </p>
-            {error && <div className={styles.errorText}>{error}</div>}
+            {error && <div className={formStyles.errorText}>{error}</div>}
             <button
-              className={styles.buttonPrimary}
+              className={buttonStyles.buttonPrimary}
               onClick={handleWithdraw}
               disabled={isWriting}
             >
@@ -151,15 +154,15 @@ export default function WithdrawModal({
 
       case "done":
         return (
-          <div className={styles.stepContent}>
-            <div className={styles.successIcon}>
+          <div className={formStyles.stepContent}>
+            <div className={formStyles.successIcon}>
               <CheckIcon size={32} />
             </div>
-            <h4 className={styles.stepTitle}>Successfully Withdrawn</h4>
-            <p className={styles.stepDescription}>
+            <h4 className={formStyles.stepTitle}>Successfully Withdrawn</h4>
+            <p className={formStyles.stepDescription}>
               {amount} USDC has been returned to your wallet.
             </p>
-            <button className={styles.buttonPrimary} onClick={handleClose}>
+            <button className={buttonStyles.buttonPrimary} onClick={handleClose}>
               Done
             </button>
           </div>
@@ -171,12 +174,12 @@ export default function WithdrawModal({
   };
 
   return (
-    <div className={styles.modalOverlay} onClick={handleClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.modalHeader}>
+    <div className={modalStyles.modalOverlay} onClick={handleClose}>
+      <div className={modalStyles.modal} onClick={(e) => e.stopPropagation()}>
+        <div className={modalStyles.modalHeader}>
           <h3>Withdraw USDC</h3>
           <button
-            className={styles.modalClose}
+            className={modalStyles.modalClose}
             onClick={handleClose}
             type="button"
           >
@@ -186,7 +189,7 @@ export default function WithdrawModal({
 
         <StepIndicator steps={STEPS} currentStepIndex={currentStep} />
 
-        <div className={styles.modalBody}>{renderStepContent()}</div>
+        <div className={modalStyles.modalBody}>{renderStepContent()}</div>
       </div>
     </div>
   );

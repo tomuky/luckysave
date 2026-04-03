@@ -1,6 +1,9 @@
 "use client";
 
-import styles from "@/app/page.module.css";
+import cardStyles from "@/components/ui/Card.module.css";
+import textStyles from "@/components/ui/Text.module.css";
+import responsiveStyles from "@/components/ui/Responsive.module.css";
+import styles from "./WalletHistoryCard.module.css";
 import useWalletHistory from "@/hooks/useWalletHistory";
 import { formatTimestamp } from "@/lib/format";
 import { BASESCAN_TX_URL } from "@/lib/constants";
@@ -39,13 +42,13 @@ export default function WalletHistoryCard({ address, isConnected }) {
   const hasTransactions = allTransactions.length > 0;
 
   return (
-    <div className={`${styles.card} ${styles.cardFullWidth}`}>
-      <div className={styles.cardHeader}>
+    <div className={`${cardStyles.card} ${cardStyles.cardFullWidth}`}>
+      <div className={cardStyles.cardHeader}>
         <h2>Wallet History</h2>
       </div>
 
       {!isConnected ? (
-        <p className={styles.muted}>Connect wallet to view history</p>
+        <p className={textStyles.muted}>Connect wallet to view history</p>
       ) : isLoading ? (
         <div className={styles.historyTableWrapper}>
           <table className={styles.historyTable}>
@@ -53,7 +56,7 @@ export default function WalletHistoryCard({ address, isConnected }) {
               <tr>
                 <th>Event</th>
                 <th>Amount</th>
-                <th className={styles.hideOnMobile}>Tx</th>
+                <th className={responsiveStyles.hideOnMobile}>Tx</th>
                 <th>Time</th>
               </tr>
             </thead>
@@ -65,9 +68,9 @@ export default function WalletHistoryCard({ address, isConnected }) {
           </table>
         </div>
       ) : error ? (
-        <p className={styles.muted}>{error}</p>
+        <p className={textStyles.muted}>{error}</p>
       ) : !hasTransactions ? (
-        <p className={styles.muted}>No app activity yet</p>
+        <p className={textStyles.muted}>No app activity yet</p>
       ) : (
         <>
           <div className={styles.historyTableWrapper}>
@@ -76,7 +79,7 @@ export default function WalletHistoryCard({ address, isConnected }) {
                 <tr>
                   <th>Event</th>
                   <th>Amount</th>
-                  <th className={styles.hideOnMobile}>Tx</th>
+                  <th className={responsiveStyles.hideOnMobile}>Tx</th>
                   <th
                     className={styles.historyHeaderClickable}
                     onClick={toggleTimestampMode}
@@ -91,13 +94,11 @@ export default function WalletHistoryCard({ address, isConnected }) {
                   const Icon = TYPE_ICONS[tx.type] || TicketIcon;
                   const txUrl = `${BASESCAN_TX_URL}/${tx.hash}`;
 
-                  // Full labels for desktop
                   let fullLabel = tx.label;
                   if (tx.type === "tickets" && tx.ticketCount) {
                     fullLabel = `Bought ${tx.ticketCount} ticket${tx.ticketCount !== 1 ? "s" : ""}`;
                   }
 
-                  // Compact labels for mobile
                   let mobileLabel = tx.label;
                   if (tx.type === "tickets" && tx.ticketCount) {
                     mobileLabel = `${tx.ticketCount} ticket${tx.ticketCount !== 1 ? "s" : ""}`;
@@ -119,8 +120,8 @@ export default function WalletHistoryCard({ address, isConnected }) {
                           className={styles.historyEventLink}
                         >
                           <Icon size={16} className={styles.historyIcon} />
-                          <span className={styles.hideOnMobile}>{fullLabel}</span>
-                          <span className={styles.showOnMobile}>{mobileLabel}</span>
+                          <span className={responsiveStyles.hideOnMobile}>{fullLabel}</span>
+                          <span className={responsiveStyles.showOnMobile}>{mobileLabel}</span>
                         </a>
                       </td>
                       <td>
@@ -128,7 +129,7 @@ export default function WalletHistoryCard({ address, isConnected }) {
                           ? `${tx.amount.toFixed(2)} USDC`
                           : "--"}
                       </td>
-                      <td className={styles.hideOnMobile}>
+                      <td className={responsiveStyles.hideOnMobile}>
                         <a
                           href={txUrl}
                           target="_blank"
@@ -140,10 +141,10 @@ export default function WalletHistoryCard({ address, isConnected }) {
                         </a>
                       </td>
                       <td>
-                        <span className={styles.hideOnMobile}>
+                        <span className={responsiveStyles.hideOnMobile}>
                           {formatTimestamp(tx.timestamp, timestampMode, false)}
                         </span>
-                        <span className={styles.showOnMobile}>
+                        <span className={responsiveStyles.showOnMobile}>
                           {formatTimestamp(tx.timestamp, timestampMode, true)}
                         </span>
                       </td>

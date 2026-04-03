@@ -1,4 +1,6 @@
-import styles from "@/app/page.module.css";
+import cardStyles from "@/components/ui/Card.module.css";
+import buttonStyles from "@/components/ui/Buttons.module.css";
+import styles from "./EarnInterestCard.module.css";
 import Skeleton from "./Skeleton";
 
 export default function EarnInterestCard({
@@ -12,10 +14,10 @@ export default function EarnInterestCard({
   isLoadingApy,
 }) {
   return (
-    <div className={styles.card}>
-      <div className={styles.cardHeader}>
+    <div className={cardStyles.card}>
+      <div className={cardStyles.cardHeader}>
         <h2>Earn Interest</h2>
-        <span className={styles.poweredBy}>
+        <span className={cardStyles.poweredBy}>
           Powered by{" "}
           <a href="https://aave.com/docs" target="_blank" rel="noopener noreferrer">
             Aave
@@ -47,10 +49,10 @@ export default function EarnInterestCard({
       </div>
 
       <div
-        className={`${styles.cardActions} ${hasDeposit ? styles.cardActionsSplit : ""}`}
+        className={`${cardStyles.cardActions} ${hasDeposit ? cardStyles.cardActionsSplit : ""}`}
       >
         <button
-          className={styles.buttonPrimary}
+          className={buttonStyles.buttonPrimary}
           onClick={onDepositClick}
           disabled={!isConnected}
         >
@@ -58,7 +60,7 @@ export default function EarnInterestCard({
         </button>
         {hasDeposit && (
           <button
-            className={styles.buttonSecondary}
+            className={buttonStyles.buttonSecondary}
             onClick={onWithdrawClick}
             disabled={!isConnected}
           >

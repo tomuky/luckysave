@@ -1,8 +1,9 @@
-import styles from "@/app/page.module.css";
+import cardStyles from "@/components/ui/Card.module.css";
+import styles from "./NeedWalletCard.module.css";
 
 export default function NeedWalletCard() {
   return (
-    <div className={`${styles.card} ${styles.needWalletCard}`}>
+    <div className={`${cardStyles.card} ${styles.needWalletCard}`}>
       <span className={styles.needWalletText}>
         Need a wallet?{" "}
         <a

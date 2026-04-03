@@ -1,4 +1,7 @@
-import styles from "@/app/page.module.css";
+import modalStyles from "@/components/ui/Modal.module.css";
+import buttonStyles from "@/components/ui/Buttons.module.css";
+import textStyles from "@/components/ui/Text.module.css";
+import shareStyles from "./ShareReferralButton.module.css";
 import ShareReferralButton from "./ShareReferralButton";
 
 export default function WalletModal({
@@ -19,20 +22,20 @@ export default function WalletModal({
   shareReferralAddress,
 }) {
   return (
-    <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(event) => event.stopPropagation()}>
-        <div className={styles.modalHeader}>
+    <div className={modalStyles.modalOverlay} onClick={onClose}>
+      <div className={modalStyles.modal} onClick={(event) => event.stopPropagation()}>
+        <div className={modalStyles.modalHeader}>
           <h3>Wallet</h3>
-          <button className={styles.modalClose} onClick={onClose} type="button">
+          <button className={modalStyles.modalClose} onClick={onClose} type="button">
             ×
           </button>
         </div>
-        <div className={styles.modalBody}>
+        <div className={modalStyles.modalBody}>
           {isConnected ? (
             <>
-              <div className={styles.modalAddress}>
+              <div className={modalStyles.modalAddress}>
                 {walletLabel}
-                <div className={styles.muted}>
+                <div className={textStyles.muted}>
                   {isOnBase
                     ? `Connected on ${baseChainName}`
                     : `Connected on ${currentChainName}`}
@@ -42,28 +45,28 @@ export default function WalletModal({
                 variant="modal"
                 address={shareReferralAddress}
                 disabled={!isOnBase}
-                className={styles.shareReferralModalFullWidth}
+                className={shareStyles.shareReferralModalFullWidth}
               />
               {!isOnBase && (
                 <button
-                  className={styles.buttonPrimary}
+                  className={buttonStyles.buttonPrimary}
                   onClick={onSwitchChain}
                   disabled={isSwitching}
                 >
                   {isSwitching ? "Switching..." : `Switch to ${baseChainName}`}
                 </button>
               )}
-              <button className={styles.buttonSecondary} onClick={onDisconnect}>
+              <button className={buttonStyles.buttonSecondary} onClick={onDisconnect}>
                 Disconnect
               </button>
             </>
           ) : (
             <>
-              <div className={styles.muted}>
+              <div className={textStyles.muted}>
                 Connect your wallet to start winning or saving.
               </div>
               <button
-                className={styles.buttonPrimary}
+                className={buttonStyles.buttonPrimary}
                 onClick={onConnect}
                 disabled={!connectorReady || isPending}
               >

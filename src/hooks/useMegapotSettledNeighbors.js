@@ -10,38 +10,57 @@ import {
 } from "@/lib/megapotSettledDraw";
 
 /**
- * @param {bigint | undefined} resultsDrawingId
+ * @param {bigint | undefined} viewingDrawingId
  * @param {bigint | undefined} newestSettledId
+ * @param {bigint | undefined} currentOpenDrawId Active drawing id (tickets sold for this round); may be ahead of newest settled.
  */
-export default function useMegapotSettledNeighbors(resultsDrawingId, newestSettledId) {
+export default function useMegapotSettledNeighbors(
+  viewingDrawingId,
+  newestSettledId,
+  currentOpenDrawId
+) {
   const publicClient = usePublicClient({ chainId: base.id });
 
   return useQuery({
     queryKey: [
       "megapot-settled-neighbors",
-      resultsDrawingId?.toString?.() ?? "",
+      viewingDrawingId?.toString?.() ?? "",
       newestSettledId?.toString?.() ?? "",
+      currentOpenDrawId?.toString?.() ?? "",
     ],
     queryFn: async () => {
-      const prev = await findPreviousSettledDrawingId(
-        publicClient,
-        resultsDrawingId
-      );
-      const next =
-        newestSettledId !== undefined
-          ? await findNextSettledDrawingId(
-              publicClient,
-              resultsDrawingId,
-              newestSettledId
-            )
-          : null;
+      const prev =
+        currentOpenDrawId !== undefined &&
+        viewingDrawingId === currentOpenDrawId
+          ? await findPreviousSettledDrawingId(publicClient, currentOpenDrawId)
+          : await findPreviousSettledDrawingId(publicClient, viewingDrawingId);
+
+      let next = null;
+      if (
+        currentOpenDrawId !== undefined &&
+        viewingDrawingId === currentOpenDrawId
+      ) {
+        next = null;
+      } else if (newestSettledId !== undefined) {
+        next = await findNextSettledDrawingId(
+          publicClient,
+          viewingDrawingId,
+          newestSettledId
+        );
+        if (
+          next === null &&
+          currentOpenDrawId !== undefined &&
+          viewingDrawingId === newestSettledId &&
+          currentOpenDrawId > newestSettledId
+        ) {
+          next = currentOpenDrawId;
+        }
+      }
+
       return { prev, next };
     },
     enabled: Boolean(
-      publicClient &&
-        resultsDrawingId !== undefined &&
-        resultsDrawingId >= 1n &&
-        newestSettledId !== undefined
+      publicClient && viewingDrawingId !== undefined && viewingDrawingId >= 1n
     ),
     staleTime: 30_000,
   });

@@ -1,0 +1,73 @@
+.lotteryBallsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.rowInPanel {
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+
+.lotteryBall {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f5f5f5;
+  border: 1px solid #d0d0d0;
+  font-weight: 700;
+  font-size: 14px;
+  color: #1f1f1f;
+}
+
+.rowInPanel .lotteryBall {
+  flex-shrink: 0;
+}
+
+.lotteryBallBonus {
+  background: #dfe8ff;
+  border-color: #a8b8e8;
+}
+
+.lotteryBallMatch {
+  background: #c8f5c8;
+  border-color: #5cb85c;
+}
+
+.lotteryBallAwaiting {
+  opacity: 0.75;
+  animation: ballPulse 1.4s ease-in-out infinite;
+}
+
+.lotteryBallMystery {
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  color: #4a4a4a;
+}
+
+@media (min-width: 768px) {
+  .rowInPanel .lotteryBall {
+    width: 38px;
+    height: 38px;
+    font-size: 16px;
+  }
+
+  .rowInPanel .lotteryBallMystery {
+    font-size: 17px;
+  }
+}
+
+@keyframes ballPulse {
+  0%,
+  100% {
+    opacity: 0.75;
+  }
+  50% {
+    opacity: 1;
+  }
+}
