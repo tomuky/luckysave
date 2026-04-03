@@ -5,12 +5,34 @@
   padding: 19px 0;
 }
 
+.heroLabelRow {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+}
+
 .heroLabel {
   font-size: 13px;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 500;
+}
+
+.howToWinLink {
+  font-size: 12px;
+  font-weight: 500;
+  color: #8a8a8a;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-transform: none;
+  letter-spacing: 0;
+  padding: 0;
+}
+
+.howToWinLink:hover {
+  color: var(--muted);
 }
 
 .heroValueLarge {

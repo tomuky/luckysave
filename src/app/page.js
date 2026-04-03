@@ -23,6 +23,7 @@ import NeedWalletCard from "@/components/NeedWalletCard";
 import DepositModal from "@/components/DepositModal";
 import WithdrawModal from "@/components/WithdrawModal";
 import BuyTicketsModal from "@/components/BuyTicketsModal";
+import HowToWinModal from "@/components/HowToWinModal";
 import WalletHistoryCard from "@/components/WalletHistoryCard";
 import MegapotDrawPanel from "@/components/MegapotDrawPanel";
 import {
@@ -61,6 +62,7 @@ export default function Home() {
   const [depositModalOpen, setDepositModalOpen] = useState(false);
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [ticketModalOpen, setTicketModalOpen] = useState(false);
+  const [howToWinOpen, setHowToWinOpen] = useState(false);
   const { inviterAddress } = useReferralInviter();
   const { countdown, nextDrawAt, isLoading: isLoadingCountdown } =
     useNextDrawCountdown();
@@ -156,6 +158,31 @@ export default function Home() {
     currentDrawingId !== undefined && currentDrawingId >= 2n
       ? currentDrawingId - 1n
       : undefined;
+
+  const { data: lastDrawTierPayouts, isLoading: isLoadingLastTierPayouts } =
+    useReadContract({
+      chainId: base.id,
+      address: MEGAPOT_JACKPOT_ADDRESS,
+      abi: megapotJackpotAbi,
+      functionName: "getDrawingTierPayouts",
+      args:
+        lastCompletedDrawingId !== undefined
+          ? [lastCompletedDrawingId]
+          : undefined,
+      query: { enabled: lastCompletedDrawingId !== undefined },
+    });
+
+  const { data: lastDrawingState } = useReadContract({
+    chainId: base.id,
+    address: MEGAPOT_JACKPOT_ADDRESS,
+    abi: megapotJackpotAbi,
+    functionName: "getDrawingState",
+    args:
+      lastCompletedDrawingId !== undefined
+        ? [lastCompletedDrawingId]
+        : undefined,
+    query: { enabled: lastCompletedDrawingId !== undefined },
+  });
 
   const { data: ticketsLastCompletedDraw } = useReadContract({
     chainId: base.id,
@@ -318,6 +345,7 @@ export default function Home() {
           <PlayLotteryCard
             jackpotLabel={jackpotLabel}
             onBuyTicketsClick={() => setTicketModalOpen(true)}
+            onHowToWinClick={() => setHowToWinOpen(true)}
             isConnected={isReadyForActions && isOnBase}
             isLoadingJackpot={isLoadingJackpot}
             countdown={countdown}
@@ -346,6 +374,18 @@ export default function Home() {
           Users are responsible for compliance.
         </footer>
       </div>
+
+      {howToWinOpen && (
+        <HowToWinModal
+          onClose={() => setHowToWinOpen(false)}
+          ballMax={drawingState?.ballMax ?? 30}
+          bonusballMax={bonusballMax}
+          currentPrizePoolWei={drawingState?.prizePool}
+          lastPrizePoolWei={lastDrawingState?.prizePool}
+          tierPayoutsLastDraw={lastDrawTierPayouts}
+          isLoadingLastPayouts={isLoadingLastTierPayouts}
+        />
+      )}
 
       {walletOpen && (
         <WalletModal

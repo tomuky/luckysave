@@ -11,6 +11,7 @@ import { ClockIcon } from "./Icons";
 export default function PlayLotteryCard({
   jackpotLabel,
   onBuyTicketsClick,
+  onHowToWinClick,
   isConnected,
   isLoadingJackpot,
   countdown,
@@ -38,7 +39,16 @@ export default function PlayLotteryCard({
       </div>
 
       <div className={styles.heroStat}>
-        <span className={styles.heroLabel}>Jackpot</span>
+        <div className={styles.heroLabelRow}>
+          <span className={styles.heroLabel}>Jackpot</span>
+          <button
+            type="button"
+            className={styles.howToWinLink}
+            onClick={onHowToWinClick}
+          >
+            How to win
+          </button>
+        </div>
         <span className={styles.heroValueLarge}>
           {isLoadingJackpot ? (
             <Skeleton variant="valueLarge" />
