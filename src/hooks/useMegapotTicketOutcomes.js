@@ -5,6 +5,7 @@ import { usePublicClient } from "wagmi";
 import { base } from "wagmi/chains";
 
 import { MEGAPOT_JACKPOT_ADDRESS } from "@/lib/constants";
+import { megapotNetClaimWei } from "@/lib/megapotWinnings";
 import { megapotJackpotAbi } from "@/lib/megapotV2Abi";
 import {
   mergeDrawingOutcomesIntoCache,
@@ -102,6 +103,8 @@ export default function useMegapotTicketOutcomes(address, drawingId, ticketRows)
         args: [drawingId],
       });
 
+      const refShare = state.referralWinShare ?? 0n;
+
       /** @type {Record<string, { tierId: number; payoutWei: string }>} */
       const toCache = {};
       /** @type {Record<string, { tierId: number; payoutWei: string; pending: boolean; isWin: boolean }>} */
@@ -109,7 +112,8 @@ export default function useMegapotTicketOutcomes(address, drawingId, ticketRows)
 
       for (let i = 0; i < ids.length; i++) {
         const tid = Number(tierIds[i]);
-        const pay = tid > 0 && tid < 12 ? payouts[tid] : 0n;
+        const gross = tid > 0 && tid < 12 ? payouts[tid] : 0n;
+        const pay = megapotNetClaimWei(gross, refShare);
         const str = ids[i].toString();
         toCache[str] = { tierId: tid, payoutWei: pay.toString() };
         outcomes[str] = {

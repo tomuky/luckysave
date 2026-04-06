@@ -10,6 +10,7 @@ import {
   MEGAPOT_TICKET_NFT_ADDRESS,
   USDC_DECIMALS,
 } from "@/lib/constants";
+import { megapotNetClaimWei } from "@/lib/megapotWinnings";
 import { megapotJackpotAbi, megapotTicketNftAbi } from "@/lib/megapotV2Abi";
 
 /**
@@ -58,16 +59,18 @@ async function scanDrawingsForClaims(publicClient, userAddress, drawingIds) {
       args: [drawingId],
     });
 
+    const refShare = state.referralWinShare ?? 0n;
     let drawTotal = 0n;
     const winning = [];
     for (let j = 0; j < ids.length; j++) {
       const tid = Number(tierIds[j]);
       if (tid > 0 && tid < 12) {
-        const pay = payouts[tid];
-        totalWei += pay;
-        drawTotal += pay;
+        const gross = payouts[tid];
+        const net = megapotNetClaimWei(gross, refShare);
+        totalWei += net;
+        drawTotal += net;
         ticketIds.push(ids[j]);
-        winning.push({ ticketId: ids[j], tierId: tid, payout: pay });
+        winning.push({ ticketId: ids[j], tierId: tid, payout: net });
       }
     }
 

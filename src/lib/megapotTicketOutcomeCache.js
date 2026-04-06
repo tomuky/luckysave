@@ -1,6 +1,6 @@
 import { BASE_CHAIN_ID } from "@/lib/constants";
 
-const STORAGE_KEY = "megapot-ticket-outcomes-v1";
+const STORAGE_KEY = "megapot-ticket-outcomes-v2";
 
 /**
  * @returns {Record<string, Record<string, { tierId: number; payoutWei: string }>>}

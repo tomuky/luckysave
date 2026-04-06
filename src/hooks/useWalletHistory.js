@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { decodeFunctionData } from "viem";
+import { usePublicClient } from "wagmi";
 import {
+  BASE_CHAIN_ID,
   MEGAPOT_JACKPOT_ADDRESS,
   MEGAPOT_RANDOM_TICKET_BUYER_ADDRESS,
   MEGAPOT_V1_ADDRESS,
@@ -11,6 +13,7 @@ import {
   USDC_DECIMALS,
 } from "@/lib/constants";
 import { megapotV1Abi, aavePoolAbi, megapotJackpotAbi, megapotRandomTicketBuyerAbi } from "@/lib/abis";
+import { enrichWalletHistoryAmounts } from "@/lib/walletHistoryAmounts";
 import useAppStore from "@/store/useAppStore";
 
 const PAGE_SIZE = 5;
@@ -60,7 +63,31 @@ function megapotAddressesLower() {
   );
 }
 
+/** Cached rows may lack USDC until we can run RPC enrichment. */
+function historyCacheIncomplete(data, canEnrichNow) {
+  if (!canEnrichNow || !Array.isArray(data)) return false;
+  return data.some((t) => {
+    if (
+      (t.functionName === "buyTicketsRandom" ||
+        t.functionName === "buyTicketsJackpot") &&
+      t.ticketCount > 0 &&
+      t.amount == null
+    ) {
+      return true;
+    }
+    if (
+      (t.functionName === "claimWinningsV1" ||
+        t.functionName === "claimWinningsV2") &&
+      t.amount == null
+    ) {
+      return true;
+    }
+    return false;
+  });
+}
+
 export default function useWalletHistory(address) {
+  const publicClient = usePublicClient({ chainId: BASE_CHAIN_ID });
   const [allTransactions, setAllTransactions] = useState([]);
   const [page, setPage] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -80,9 +107,14 @@ export default function useWalletHistory(address) {
     setError(null);
 
     const cacheKey = `history-${address.toLowerCase()}`;
+    const canEnrich = Boolean(publicClient && address);
     if (!bypassCache) {
       const cached = cache.get(cacheKey);
-      if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+      if (
+        cached &&
+        Date.now() - cached.timestamp < CACHE_TTL_MS &&
+        !historyCacheIncomplete(cached.data, canEnrich)
+      ) {
         setAllTransactions(cached.data);
         setIsLoading(false);
         return;
@@ -193,8 +225,15 @@ export default function useWalletHistory(address) {
             console.warn("Failed to decode tx:", tx.hash, e);
           }
 
+          const blockNumberRaw = tx.blockNumber;
+          const blockNumber =
+            blockNumberRaw != null
+              ? parseInt(String(blockNumberRaw), 10)
+              : null;
+
           return {
             hash: tx.hash,
+            blockNumber: Number.isFinite(blockNumber) ? blockNumber : null,
             timestamp: parseInt(tx.timeStamp, 10),
             functionName,
             label: typeInfo.label,
@@ -205,12 +244,37 @@ export default function useWalletHistory(address) {
         })
         .filter(Boolean);
 
-      cache.set(cacheKey, {
-        data: relevantTxs,
-        timestamp: Date.now(),
+      const withAmounts =
+        publicClient && address
+          ? await enrichWalletHistoryAmounts(
+              publicClient,
+              relevantTxs,
+              address
+            )
+          : relevantTxs;
+
+      const hasEnrichableRows = relevantTxs.some((t) => {
+        if (
+          (t.functionName === "buyTicketsRandom" ||
+            t.functionName === "buyTicketsJackpot") &&
+          t.ticketCount > 0
+        ) {
+          return true;
+        }
+        return (
+          t.functionName === "claimWinningsV1" ||
+          t.functionName === "claimWinningsV2"
+        );
       });
 
-      setAllTransactions(relevantTxs);
+      if (!hasEnrichableRows || canEnrich) {
+        cache.set(cacheKey, {
+          data: withAmounts,
+          timestamp: Date.now(),
+        });
+      }
+
+      setAllTransactions(withAmounts);
     } catch (e) {
       console.error("Failed to fetch wallet history:", e);
       const friendlyMessage = e.message?.startsWith("Unable to")
@@ -220,7 +284,7 @@ export default function useWalletHistory(address) {
     } finally {
       setIsLoading(false);
     }
-  }, [address]);
+  }, [address, publicClient]);
 
   useEffect(() => {
     fetchHistory();
