@@ -36,8 +36,13 @@ import {
   USDC_DECIMALS,
 } from "@/lib/constants";
 import { aavePoolAbi, erc20Abi } from "@/lib/abis";
-import { megapotJackpotAbi, megapotTicketNftAbi } from "@/lib/megapotV2Abi";
+import {
+  megapotJackpotAbi,
+  megapotPayoutCalculatorAbi,
+  megapotTicketNftAbi,
+} from "@/lib/megapotV2Abi";
 import { currency, currencyWhole, formatApy } from "@/lib/format";
+import { MEGAPOT_JACKPOT_TIER_INDEX } from "@/lib/megapotTierMath";
 import useNextDrawCountdown from "@/hooks/useNextDrawCountdown";
 import useWalletLabel from "@/hooks/useWalletLabel";
 import useReferralInviter from "@/hooks/useReferralInviter";
@@ -159,29 +164,37 @@ export default function Home() {
       ? currentDrawingId - 1n
       : undefined;
 
-  const { data: lastDrawTierPayouts, isLoading: isLoadingLastTierPayouts } =
-    useReadContract({
-      chainId: base.id,
-      address: MEGAPOT_JACKPOT_ADDRESS,
-      abi: megapotJackpotAbi,
-      functionName: "getDrawingTierPayouts",
-      args:
-        lastCompletedDrawingId !== undefined
-          ? [lastCompletedDrawingId]
-          : undefined,
-      query: { enabled: lastCompletedDrawingId !== undefined },
-    });
-
-  const { data: lastDrawingState } = useReadContract({
+  const payoutCalculatorAddress = drawingState?.payoutCalculator;
+  const zeroAddr = "0x0000000000000000000000000000000000000000";
+  const {
+    data: expectedTierPayouts,
+    isLoading: isLoadingExpectedTierPayouts,
+    isFetched: isFetchedExpectedTierPayouts,
+  } = useReadContract({
     chainId: base.id,
-    address: MEGAPOT_JACKPOT_ADDRESS,
-    abi: megapotJackpotAbi,
-    functionName: "getDrawingState",
-    args:
-      lastCompletedDrawingId !== undefined
-        ? [lastCompletedDrawingId]
+    address:
+      payoutCalculatorAddress && payoutCalculatorAddress !== zeroAddr
+        ? payoutCalculatorAddress
         : undefined,
-    query: { enabled: lastCompletedDrawingId !== undefined },
+    abi: megapotPayoutCalculatorAbi,
+    functionName: "getExpectedDrawingTierPayouts",
+    args:
+      currentDrawingId !== undefined && drawingState
+        ? [
+            currentDrawingId,
+            drawingState.prizePool,
+            drawingState.ballMax,
+            drawingState.bonusballMax,
+          ]
+        : undefined,
+    query: {
+      enabled: Boolean(
+        payoutCalculatorAddress &&
+          payoutCalculatorAddress !== zeroAddr &&
+          currentDrawingId !== undefined &&
+          drawingState
+      ),
+    },
   });
 
   const { data: ticketsLastCompletedDraw } = useReadContract({
@@ -224,7 +237,16 @@ export default function Home() {
   });
   const claimData = claimQuery.data;
 
-  const isLoadingJackpot = !isFetchedDrawingState || !drawingState;
+  const needsJackpotEstimate = Boolean(
+    drawingState &&
+      payoutCalculatorAddress &&
+      payoutCalculatorAddress !== zeroAddr
+  );
+  const isLoadingJackpot =
+    !isFetchedDrawingState ||
+    !drawingState ||
+    (needsJackpotEstimate &&
+      (isLoadingExpectedTierPayouts || !isFetchedExpectedTierPayouts));
   const isLoadingDeposit = address && !isFetchedATokenBalance;
   const isLoadingApy = !isFetchedReserveData;
   const isLoadingWalletBalance = address && !isFetchedUsdcBalance;
@@ -242,10 +264,19 @@ export default function Home() {
     ? Number(drawingState.bonusballMax)
     : 12;
 
-  const jackpotNum = drawingState?.prizePool
-    ? Number(formatUnits(drawingState.prizePool, USDC_DECIMALS))
-    : 0;
-  const jackpotLabel = currencyWhole.format(Math.round(jackpotNum));
+  const jackpotTakeHomeWei = expectedTierPayouts?.[MEGAPOT_JACKPOT_TIER_INDEX];
+  const jackpotLabel = useMemo(() => {
+    if (
+      jackpotTakeHomeWei === undefined ||
+      jackpotTakeHomeWei === null ||
+      jackpotTakeHomeWei === 0n
+    ) {
+      return "—";
+    }
+    const n = Number(formatUnits(jackpotTakeHomeWei, USDC_DECIMALS));
+    if (!Number.isFinite(n) || n <= 0) return "—";
+    return currencyWhole.format(Math.round(n));
+  }, [jackpotTakeHomeWei]);
 
   const ticketCount = userTickets?.length ?? 0;
   const hasWinnings = Boolean(claimData?.ticketIds?.length);
@@ -380,10 +411,10 @@ export default function Home() {
           onClose={() => setHowToWinOpen(false)}
           ballMax={drawingState?.ballMax ?? 30}
           bonusballMax={bonusballMax}
-          currentPrizePoolWei={drawingState?.prizePool}
-          lastPrizePoolWei={lastDrawingState?.prizePool}
-          tierPayoutsLastDraw={lastDrawTierPayouts}
-          isLoadingLastPayouts={isLoadingLastTierPayouts}
+          expectedTierPayoutsWei={expectedTierPayouts}
+          isLoadingExpectedPayouts={
+            isLoadingExpectedTierPayouts || !drawingState
+          }
         />
       )}
 

@@ -25,33 +25,12 @@ function formatPayoutWei(wei) {
   return currency.format(n);
 }
 
-/** Scale last draw’s per-ticket payout by current vs last prize pool (rough estimate). */
-function estimatedPayoutWei(
-  tierWei,
-  currentPrizePoolWei,
-  lastPrizePoolWei
-) {
-  if (
-    tierWei === undefined ||
-    tierWei === null ||
-    tierWei === 0n ||
-    !lastPrizePoolWei ||
-    lastPrizePoolWei === 0n ||
-    !currentPrizePoolWei
-  ) {
-    return null;
-  }
-  return (tierWei * currentPrizePoolWei) / lastPrizePoolWei;
-}
-
 export default function HowToWinModal({
   onClose,
   ballMax,
   bonusballMax,
-  currentPrizePoolWei,
-  lastPrizePoolWei,
-  tierPayoutsLastDraw,
-  isLoadingLastPayouts,
+  expectedTierPayoutsWei,
+  isLoadingExpectedPayouts,
 }) {
   const nm = Number(ballMax) || 30;
   const bm = Number(bonusballMax) || 12;
@@ -73,6 +52,11 @@ export default function HowToWinModal({
           </button>
         </div>
         <div className={`${modalStyles.modalBody} ${styles.howToWinBody}`}>
+          <p className={styles.payoutNote}>
+            Estimated per winning ticket for the current pool (same as the card
+            jackpot for 5 + bonusball). Duplicate winning tickets split the
+            premium portion.
+          </p>
           <div className={styles.tableWrap}>
             <table className={styles.table}>
               <thead>
@@ -85,12 +69,7 @@ export default function HowToWinModal({
               <tbody>
                 {TIER_ORDER.map((tierIndex) => {
                   const oneIn = tierOddsOneIn(tierIndex, nm, bm);
-                  const lastWei = tierPayoutsLastDraw?.[tierIndex];
-                  const estWei = estimatedPayoutWei(
-                    lastWei,
-                    currentPrizePoolWei,
-                    lastPrizePoolWei
-                  );
+                  const estWei = expectedTierPayoutsWei?.[tierIndex];
                   return (
                     <tr
                       key={tierIndex}
@@ -103,7 +82,7 @@ export default function HowToWinModal({
                       <td>{megapotTierLabel(tierIndex)}</td>
                       <td className={styles.numeric}>{formatOdds(oneIn)}</td>
                       <td className={styles.numeric}>
-                        {isLoadingLastPayouts
+                        {isLoadingExpectedPayouts
                           ? "…"
                           : formatPayoutWei(estWei)}
                       </td>

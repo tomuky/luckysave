@@ -12,6 +12,9 @@ export function nCr(n, k) {
 
 const NORMAL_PICKS = 5;
 
+/** On-chain tier id for 5 main numbers + bonusball (top prize). */
+export const MEGAPOT_JACKPOT_TIER_INDEX = 11;
+
 /**
  * Count of ticket combinations that match a given draw result in exactly this tier
  * (same formula as Megapot's GuaranteedMinimumPayoutCalculator._calculateTierTotalWinningCombos).

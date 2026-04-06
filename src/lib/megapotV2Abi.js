@@ -16,6 +16,22 @@ export const megapotDrawingStateComponents = [
   { name: "jackpotLock", type: "bool" },
 ];
 
+/** PayoutCalculator — address comes from `DrawingState.payoutCalculator` per drawing. */
+export const megapotPayoutCalculatorAbi = [
+  {
+    name: "getExpectedDrawingTierPayouts",
+    type: "function",
+    stateMutability: "view",
+    inputs: [
+      { name: "_drawingId", type: "uint256" },
+      { name: "_prizePool", type: "uint256" },
+      { name: "_normalMax", type: "uint8" },
+      { name: "_bonusballMax", type: "uint8" },
+    ],
+    outputs: [{ name: "", type: "uint256[12]" }],
+  },
+];
+
 export const megapotJackpotAbi = [
   {
     name: "currentDrawingId",

@@ -4,7 +4,7 @@ export const currency = new Intl.NumberFormat("en-US", {
   minimumFractionDigits: 2,
 });
 
-/** USD with no fractional digits (e.g. rounded jackpot). */
+/** USD with no fractional digits (e.g. rounded lottery headline amounts). */
 export const currencyWhole = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
