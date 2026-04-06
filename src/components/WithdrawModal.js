@@ -1,13 +1,16 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { parseUnits } from "viem";
-import { useAccount, useWriteContract } from "wagmi";
+import { useAccount, useConfig, useWriteContract } from "wagmi";
+import { waitForTransactionReceipt } from "wagmi/actions";
+import { base } from "wagmi/chains";
 import modalStyles from "@/components/ui/Modal.module.css";
 import formStyles from "@/components/ui/Form.module.css";
 import buttonStyles from "@/components/ui/Buttons.module.css";
 import textStyles from "@/components/ui/Text.module.css";
 import StepIndicator from "./StepIndicator";
+import TxStatusHint from "./TxStatusHint";
 import { CheckIcon, CloseIcon } from "./Icons";
 import { AAVE_POOL_ADDRESS, USDC_ADDRESS, USDC_DECIMALS } from "@/lib/constants";
 import { aavePoolAbi } from "@/lib/abis";
@@ -26,11 +29,14 @@ export default function WithdrawModal({
   onSuccess,
 }) {
   const { address } = useAccount();
+  const config = useConfig();
   const { writeContractAsync, isPending: isWriting } = useWriteContract();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [amount, setAmount] = useState("");
   const [error, setError] = useState("");
+  const [awaitingReceipt, setAwaitingReceipt] = useState(false);
+  const [pendingTxHash, setPendingTxHash] = useState(null);
 
   const normalizeInput = (value) => {
     const cleaned = value.replace(/[^\d.]/g, "");
@@ -56,6 +62,12 @@ export default function WithdrawModal({
   const canContinue =
     parsedAmount > 0n && (!depositBalance || depositBalance >= parsedAmount);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    setAwaitingReceipt(false);
+    setPendingTxHash(null);
+  }, [isOpen]);
+
   const handleContinue = () => {
     if (!canContinue) return;
     setError("");
@@ -64,19 +76,29 @@ export default function WithdrawModal({
 
   const handleWithdraw = async () => {
     setError("");
+    setPendingTxHash(null);
     try {
-      await writeContractAsync({
+      const hash = await writeContractAsync({
+        chainId: base.id,
         address: AAVE_POOL_ADDRESS,
         abi: aavePoolAbi,
         functionName: "withdraw",
         args: [USDC_ADDRESS, parsedAmount, address],
       });
+      setPendingTxHash(hash);
+      setAwaitingReceipt(true);
+      await waitForTransactionReceipt(config, { hash, chainId: base.id });
       setCurrentStep(2);
       onSuccess?.();
     } catch (err) {
       setError(err?.shortMessage || err?.message || "Withdrawal failed");
+    } finally {
+      setAwaitingReceipt(false);
+      setPendingTxHash(null);
     }
   };
+
+  const txBusy = isWriting || awaitingReceipt;
 
   const handleClose = () => {
     setCurrentStep(0);
@@ -141,13 +163,25 @@ export default function WithdrawModal({
             <p className={formStyles.stepDescriptionMuted}>
               Your remaining deposit will continue earning interest.
             </p>
+            {isWriting && (
+              <p className={formStyles.txPendingHint}>
+                Check your wallet to sign the withdrawal.
+              </p>
+            )}
+            {awaitingReceipt && (
+              <TxStatusHint chain={base} hash={pendingTxHash} />
+            )}
             {error && <div className={formStyles.errorText}>{error}</div>}
             <button
               className={buttonStyles.buttonPrimary}
               onClick={handleWithdraw}
-              disabled={isWriting}
+              disabled={txBusy}
             >
-              {isWriting ? "Withdrawing..." : "Withdraw USDC"}
+              {isWriting
+                ? "Confirm in wallet…"
+                : awaitingReceipt
+                  ? "Confirming on Base…"
+                  : "Withdraw USDC"}
             </button>
           </div>
         );

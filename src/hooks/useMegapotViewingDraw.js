@@ -21,6 +21,8 @@ export default function useMegapotViewingDraw({
   address,
   isOnBase,
   currentDrawingId,
+  /** Increment after a successful buy so we show tickets for the open draw, not a settled one. */
+  focusOpenDrawKey = 0,
 }) {
   const { data: latestWin, isFetched: isFetchedLatestWin } =
     useMegapotLatestWinning(currentDrawingId);
@@ -56,6 +58,12 @@ export default function useMegapotViewingDraw({
       return currentDrawingId;
     });
   }, [currentDrawingId, isFetchedLatestWin, latestWin]);
+
+  useEffect(() => {
+    if (focusOpenDrawKey === 0) return;
+    if (currentDrawingId === undefined) return;
+    setViewingDrawingId(currentDrawingId);
+  }, [focusOpenDrawKey, currentDrawingId]);
 
   const { data: winningLine, isLoading: loadingWinningLine } =
     useMegapotDrawingWinningLine(viewingDrawingId);

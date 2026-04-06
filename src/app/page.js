@@ -67,6 +67,7 @@ export default function Home() {
   const [depositModalOpen, setDepositModalOpen] = useState(false);
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [ticketModalOpen, setTicketModalOpen] = useState(false);
+  const [focusOpenDrawKey, setFocusOpenDrawKey] = useState(0);
   const [howToWinOpen, setHowToWinOpen] = useState(false);
   const { inviterAddress } = useReferralInviter();
   const { countdown, nextDrawAt, isLoading: isLoadingCountdown } =
@@ -337,9 +338,23 @@ export default function Home() {
     triggerRefetch();
   };
 
-  const handleTicketSuccess = () => {
+  const handleTicketSuccess = async () => {
+    setFocusOpenDrawKey((k) => k + 1);
+    await queryClient.invalidateQueries({
+      predicate: (query) => {
+        const key = query.queryKey;
+        if (!Array.isArray(key) || key[0] !== "readContract") return false;
+        const params = key[1];
+        return (
+          params?.functionName === "getUserTickets" &&
+          typeof params?.address === "string" &&
+          params.address.toLowerCase() ===
+            MEGAPOT_TICKET_NFT_ADDRESS.toLowerCase()
+        );
+      },
+    });
     refetchUsdcBalance();
-    refetchUserTickets();
+    await refetchUserTickets();
     triggerRefetch();
     setEntered(true);
   };
@@ -388,6 +403,7 @@ export default function Home() {
             isConnected={isConnected}
             isOnBase={isOnBase}
             currentDrawingId={currentDrawingId}
+            focusOpenDrawKey={focusOpenDrawKey}
             hasWinnings={hasWinnings}
             winningsLabel={winningsLabel}
             onClaimClick={handleClaimWinnings}

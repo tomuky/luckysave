@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useAccount, useReadContract, useWriteContract } from "wagmi";
+import {
+  useAccount,
+  useConfig,
+  useReadContract,
+  useWriteContract,
+} from "wagmi";
+import { waitForTransactionReceipt } from "wagmi/actions";
 import { base } from "wagmi/chains";
 
 import modalStyles from "@/components/ui/Modal.module.css";
@@ -9,6 +15,7 @@ import formStyles from "@/components/ui/Form.module.css";
 import buttonStyles from "@/components/ui/Buttons.module.css";
 import textStyles from "@/components/ui/Text.module.css";
 import StepIndicator from "./StepIndicator";
+import TxStatusHint from "./TxStatusHint";
 import { CheckIcon, CloseIcon, PlusIcon, MinusIcon } from "./Icons";
 import AnimatedNumber from "./AnimatedNumber";
 import {
@@ -41,11 +48,16 @@ export default function BuyTicketsModal({
   onSuccess,
 }) {
   const { address } = useAccount();
+  const config = useConfig();
   const { writeContractAsync, isPending: isWriting } = useWriteContract();
 
   const [stepIdx, setStepIdx] = useState(0);
   const [ticketCount, setTicketCount] = useState(1);
   const [error, setError] = useState("");
+  const [awaitingApproveReceipt, setAwaitingApproveReceipt] = useState(false);
+  const [approveTxHash, setApproveTxHash] = useState(null);
+  const [awaitingBuyReceipt, setAwaitingBuyReceipt] = useState(false);
+  const [buyTxHash, setBuyTxHash] = useState(null);
 
   const spender = MEGAPOT_RANDOM_TICKET_BUYER_ADDRESS;
 
@@ -101,28 +113,36 @@ export default function BuyTicketsModal({
 
   const handleApprove = async () => {
     setError("");
+    setApproveTxHash(null);
     try {
-      await writeContractAsync({
+      const hash = await writeContractAsync({
         chainId: base.id,
         address: USDC_ADDRESS,
         abi: erc20Abi,
         functionName: "approve",
         args: [spender, parsedAmount],
       });
+      setApproveTxHash(hash);
+      setAwaitingApproveReceipt(true);
+      await waitForTransactionReceipt(config, { hash, chainId: base.id });
       setStepIdx(2);
     } catch (err) {
       setError(err?.shortMessage || err?.message || "Approval failed");
+    } finally {
+      setAwaitingApproveReceipt(false);
+      setApproveTxHash(null);
     }
   };
 
   const handleBuy = async () => {
     setError("");
+    setBuyTxHash(null);
     const { referrers, referralSplit } = buildReferralTxArgs(
       address,
       inviterAddress
     );
     try {
-      await writeContractAsync({
+      const hash = await writeContractAsync({
         chainId: base.id,
         address: MEGAPOT_RANDOM_TICKET_BUYER_ADDRESS,
         abi: megapotRandomTicketBuyerAbi,
@@ -135,12 +155,21 @@ export default function BuyTicketsModal({
           MEGAPOT_SOURCE_BYTES32,
         ],
       });
+      setBuyTxHash(hash);
+      setAwaitingBuyReceipt(true);
+      await waitForTransactionReceipt(config, { hash, chainId: base.id });
       setStepIdx(3);
-      onSuccess?.();
+      void Promise.resolve(onSuccess?.());
     } catch (err) {
       setError(err?.shortMessage || err?.message || "Purchase failed");
+    } finally {
+      setAwaitingBuyReceipt(false);
+      setBuyTxHash(null);
     }
   };
+
+  const approveBusy = isWriting || awaitingApproveReceipt;
+  const buyBusy = isWriting || awaitingBuyReceipt;
 
   const handleClose = () => onClose();
 
@@ -215,14 +244,26 @@ export default function BuyTicketsModal({
               <p className={formStyles.stepDescription}>
                 Allow {totalUsdcLabel} USDC for this purchase.
               </p>
+              {isWriting && (
+                <p className={formStyles.txPendingHint}>
+                  Check your wallet to sign the approval.
+                </p>
+              )}
+              {awaitingApproveReceipt && (
+                <TxStatusHint chain={base} hash={approveTxHash} />
+              )}
               {error && <div className={formStyles.errorText}>{error}</div>}
               <button
                 className={buttonStyles.buttonPrimary}
                 onClick={handleApprove}
-                disabled={isWriting}
+                disabled={approveBusy}
                 type="button"
               >
-                {isWriting ? "Approving…" : "Approve USDC"}
+                {isWriting
+                  ? "Confirm in wallet…"
+                  : awaitingApproveReceipt
+                    ? "Confirming on Base…"
+                    : "Approve USDC"}
               </button>
             </div>
           )}
@@ -232,14 +273,26 @@ export default function BuyTicketsModal({
               <p className={formStyles.stepDescription}>
                 Confirm {ticketCount} random line{ticketCount !== 1 ? "s" : ""}.
               </p>
+              {isWriting && (
+                <p className={formStyles.txPendingHint}>
+                  Check your wallet to sign the purchase.
+                </p>
+              )}
+              {awaitingBuyReceipt && (
+                <TxStatusHint chain={base} hash={buyTxHash} />
+              )}
               {error && <div className={formStyles.errorText}>{error}</div>}
               <button
                 className={buttonStyles.buttonPrimary}
                 onClick={handleBuy}
-                disabled={isWriting}
+                disabled={buyBusy}
                 type="button"
               >
-                {isWriting ? "Buying…" : "Buy tickets"}
+                {isWriting
+                  ? "Confirm in wallet…"
+                  : awaitingBuyReceipt
+                    ? "Confirming on Base…"
+                    : "Buy tickets"}
               </button>
             </div>
           )}

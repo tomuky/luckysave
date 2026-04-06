@@ -79,6 +79,32 @@
   line-height: 1.5;
 }
 
+.txStatusHint {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.txPendingHint {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.txExplorerLink {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  width: fit-content;
+}
+
+.txExplorerLink:hover {
+  opacity: 0.85;
+}
+
 .ticketSelector {
   display: flex;
   align-items: center;

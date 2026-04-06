@@ -1,13 +1,21 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { parseUnits } from "viem";
-import { useAccount, useReadContract, useWriteContract } from "wagmi";
+import {
+  useAccount,
+  useConfig,
+  useReadContract,
+  useWriteContract,
+} from "wagmi";
+import { waitForTransactionReceipt } from "wagmi/actions";
+import { base } from "wagmi/chains";
 import modalStyles from "@/components/ui/Modal.module.css";
 import formStyles from "@/components/ui/Form.module.css";
 import buttonStyles from "@/components/ui/Buttons.module.css";
 import textStyles from "@/components/ui/Text.module.css";
 import StepIndicator from "./StepIndicator";
+import TxStatusHint from "./TxStatusHint";
 import { CheckIcon, CloseIcon } from "./Icons";
 import {
   AAVE_POOL_ADDRESS,
@@ -32,11 +40,14 @@ export default function DepositModal({
   onSuccess,
 }) {
   const { address } = useAccount();
+  const config = useConfig();
   const { writeContractAsync, isPending: isWriting } = useWriteContract();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [amount, setAmount] = useState("");
   const [error, setError] = useState("");
+  const [awaitingReceipt, setAwaitingReceipt] = useState(false);
+  const [pendingTxHash, setPendingTxHash] = useState(null);
 
   const { data: allowance } = useReadContract({
     address: USDC_ADDRESS,
@@ -71,6 +82,12 @@ export default function DepositModal({
   const canContinue =
     parsedAmount > 0n && (!usdcBalance || usdcBalance >= parsedAmount);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    setAwaitingReceipt(false);
+    setPendingTxHash(null);
+  }, [isOpen]);
+
   const handleContinue = () => {
     if (!canContinue) return;
     setError("");
@@ -80,34 +97,52 @@ export default function DepositModal({
 
   const handleApprove = async () => {
     setError("");
+    setPendingTxHash(null);
     try {
-      await writeContractAsync({
+      const hash = await writeContractAsync({
+        chainId: base.id,
         address: USDC_ADDRESS,
         abi: erc20Abi,
         functionName: "approve",
         args: [AAVE_POOL_ADDRESS, parsedAmount],
       });
+      setPendingTxHash(hash);
+      setAwaitingReceipt(true);
+      await waitForTransactionReceipt(config, { hash, chainId: base.id });
       setCurrentStep(2);
     } catch (err) {
       setError(err?.shortMessage || err?.message || "Approval failed");
+    } finally {
+      setAwaitingReceipt(false);
+      setPendingTxHash(null);
     }
   };
 
   const handleDeposit = async () => {
     setError("");
+    setPendingTxHash(null);
     try {
-      await writeContractAsync({
+      const hash = await writeContractAsync({
+        chainId: base.id,
         address: AAVE_POOL_ADDRESS,
         abi: aavePoolAbi,
         functionName: "supply",
         args: [USDC_ADDRESS, parsedAmount, address, 0],
       });
+      setPendingTxHash(hash);
+      setAwaitingReceipt(true);
+      await waitForTransactionReceipt(config, { hash, chainId: base.id });
       setCurrentStep(3);
       onSuccess?.();
     } catch (err) {
       setError(err?.shortMessage || err?.message || "Deposit failed");
+    } finally {
+      setAwaitingReceipt(false);
+      setPendingTxHash(null);
     }
   };
+
+  const txBusy = isWriting || awaitingReceipt;
 
   const handleClose = () => {
     setCurrentStep(0);
@@ -165,13 +200,25 @@ export default function DepositModal({
             <p className={formStyles.stepDescription}>
               Allow access to {amount} USDC for this deposit.
             </p>
+            {isWriting && (
+              <p className={formStyles.txPendingHint}>
+                Check your wallet to sign the approval.
+              </p>
+            )}
+            {awaitingReceipt && (
+              <TxStatusHint chain={base} hash={pendingTxHash} />
+            )}
             {error && <div className={formStyles.errorText}>{error}</div>}
             <button
               className={buttonStyles.buttonPrimary}
               onClick={handleApprove}
-              disabled={isWriting}
+              disabled={txBusy}
             >
-              {isWriting ? "Approving..." : "Approve USDC"}
+              {isWriting
+                ? "Confirm in wallet…"
+                : awaitingReceipt
+                  ? "Confirming on Base…"
+                  : "Approve USDC"}
             </button>
           </div>
         );
@@ -183,13 +230,25 @@ export default function DepositModal({
             <p className={formStyles.stepDescription}>
               Deposit {amount} USDC to start earning {apyLabel} APY.
             </p>
+            {isWriting && (
+              <p className={formStyles.txPendingHint}>
+                Check your wallet to sign the deposit.
+              </p>
+            )}
+            {awaitingReceipt && (
+              <TxStatusHint chain={base} hash={pendingTxHash} />
+            )}
             {error && <div className={formStyles.errorText}>{error}</div>}
             <button
               className={buttonStyles.buttonPrimary}
               onClick={handleDeposit}
-              disabled={isWriting}
+              disabled={txBusy}
             >
-              {isWriting ? "Depositing..." : "Deposit USDC"}
+              {isWriting
+                ? "Confirm in wallet…"
+                : awaitingReceipt
+                  ? "Confirming on Base…"
+                  : "Deposit USDC"}
             </button>
           </div>
         );

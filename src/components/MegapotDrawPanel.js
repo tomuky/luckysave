@@ -18,6 +18,7 @@ export default function MegapotDrawPanel({
   isConnected,
   isOnBase,
   currentDrawingId,
+  focusOpenDrawKey,
   hasWinnings,
   winningsLabel,
   onClaimClick,
@@ -28,6 +29,7 @@ export default function MegapotDrawPanel({
     address,
     isOnBase,
     currentDrawingId,
+    focusOpenDrawKey,
   });
 
   const loadingDrawHeader =
