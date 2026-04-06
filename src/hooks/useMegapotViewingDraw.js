@@ -11,6 +11,9 @@ import useMegapotDrawingWinningLine from "@/hooks/useMegapotDrawingWinningLine";
 import useMegapotSettledNeighbors from "@/hooks/useMegapotSettledNeighbors";
 import useMegapotTicketOutcomes from "@/hooks/useMegapotTicketOutcomes";
 
+/** After a draw, default to that settled round until this long after its on-chain draw time. */
+const DEFAULT_TO_SETTLED_WITHIN_MS = 12 * 60 * 60 * 1000;
+
 /**
  * Viewing draw id, winning line, user tickets, outcomes, and neighbor navigation.
  */
@@ -19,7 +22,8 @@ export default function useMegapotViewingDraw({
   isOnBase,
   currentDrawingId,
 }) {
-  const { data: latestWin } = useMegapotLatestWinning(currentDrawingId);
+  const { data: latestWin, isFetched: isFetchedLatestWin } =
+    useMegapotLatestWinning(currentDrawingId);
 
   const newestSettledId = latestWin?.drawingId;
 
@@ -28,14 +32,30 @@ export default function useMegapotViewingDraw({
 
   useEffect(() => {
     if (currentDrawingId === undefined) return;
+    const needsLatestWin =
+      currentDrawingId >= 2n && isFetchedLatestWin === false;
+    if (needsLatestWin) return;
+
     const prev = prevCurrentDrawingIdRef.current;
     prevCurrentDrawingIdRef.current = currentDrawingId;
     setViewingDrawingId((v) => {
-      if (v === undefined) return currentDrawingId;
-      if (prev !== undefined && currentDrawingId > prev) return currentDrawingId;
-      return v;
+      if (v !== undefined) {
+        if (prev !== undefined && currentDrawingId > prev) return currentDrawingId;
+        return v;
+      }
+      if (
+        latestWin?.drawingId !== undefined &&
+        latestWin.drawingTime !== undefined &&
+        latestWin.drawingTime !== 0n
+      ) {
+        const drawAtMs = Number(latestWin.drawingTime) * 1000;
+        if (Date.now() - drawAtMs < DEFAULT_TO_SETTLED_WITHIN_MS) {
+          return latestWin.drawingId;
+        }
+      }
+      return currentDrawingId;
     });
-  }, [currentDrawingId]);
+  }, [currentDrawingId, isFetchedLatestWin, latestWin]);
 
   const { data: winningLine, isLoading: loadingWinningLine } =
     useMegapotDrawingWinningLine(viewingDrawingId);

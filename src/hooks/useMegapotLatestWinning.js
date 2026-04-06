@@ -30,6 +30,7 @@ async function fetchLatestWinning(publicClient, currentDrawingId) {
       const bonusball = unpacked.bonusball ?? unpacked[1];
       return {
         drawingId: id,
+        drawingTime: state.drawingTime,
         normals,
         bonusball,
       };
