@@ -122,6 +122,18 @@ export async function enrichWalletHistoryAmounts(
   }
 
   const userLower = userAddress.toLowerCase();
+  /** @type {Map<string, bigint>} */
+  const ticketPriceWeiByBlock = new Map();
+  const priceWeiAtBlock = async (blockNumber) => {
+    const key = blockNumber.toString();
+    let wei = ticketPriceWeiByBlock.get(key);
+    if (wei === undefined) {
+      wei = await ticketPriceWeiAtBlock(publicClient, blockNumber);
+      ticketPriceWeiByBlock.set(key, wei);
+    }
+    return wei;
+  };
+
   const out = [];
 
   for (let i = 0; i < transactions.length; i += BATCH) {
@@ -144,10 +156,7 @@ export async function enrichWalletHistoryAmounts(
         try {
           if (needsTicketAmount) {
             const blockNumber = BigInt(tx.blockNumber);
-            const priceWei = await ticketPriceWeiAtBlock(
-              publicClient,
-              blockNumber
-            );
+            const priceWei = await priceWeiAtBlock(blockNumber);
             const totalWei = BigInt(tx.ticketCount) * priceWei;
             amount = weiToUsdcNumber(totalWei);
           } else if (needsClaimAmount && tx.hash) {

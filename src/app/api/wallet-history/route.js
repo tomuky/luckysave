@@ -12,6 +12,22 @@ function txListResponseOk(data) {
   return Array.isArray(data.result);
 }
 
+/** Etherscan / Blockscout use status "0" + empty result for a valid empty tx list. */
+function explorerEmptyTransactionList(data) {
+  if (!data || typeof data !== "object") return false;
+  const s = data.status;
+  if (s !== "0" && s !== 0) return false;
+  if (!Array.isArray(data.result) || data.result.length !== 0) return false;
+  const msg = String(data.message ?? "").toLowerCase();
+  return (
+    msg.includes("no transaction") ||
+    msg.includes("no record") ||
+    msg.includes("no matching")
+  );
+}
+
+const EMPTY_TXLIST_OK = { status: "1", message: "OK", result: [] };
+
 async function fetchEtherscanTxList(address, apiKey) {
   const params = new URLSearchParams({
     chainid: String(BASE_CHAIN_ID),
@@ -75,11 +91,17 @@ export async function GET(request) {
       if (txListResponseOk(etherscanData)) {
         return NextResponse.json(etherscanData);
       }
+      if (explorerEmptyTransactionList(etherscanData)) {
+        return NextResponse.json(EMPTY_TXLIST_OK);
+      }
     }
 
     const blockscoutData = await fetchBlockscoutTxList(address);
     if (txListResponseOk(blockscoutData)) {
       return NextResponse.json(blockscoutData);
+    }
+    if (explorerEmptyTransactionList(blockscoutData)) {
+      return NextResponse.json(EMPTY_TXLIST_OK);
     }
 
     return NextResponse.json(
